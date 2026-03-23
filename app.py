@@ -37,7 +37,6 @@ with st.form("inspection_form"):
     driver_name = st.text_input("Driver Name")
     inspection_date = st.date_input("Date", value=date.today())
     route_job = st.text_input("Route / Job #")
-    time_recorded = st.text_input("Time")
 
     st.subheader("Truck")
     truck_unit_number = st.text_input("Truck Unit #")
