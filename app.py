@@ -59,17 +59,13 @@ if submitted:
 
         row = [
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            company_name,
             driver_name,
             inspection_date.isoformat(),
             route_job,
             time_recorded,
             truck_unit_number,
-            truck_brakes,
             trailer_unit_number,
-            trailer_tires,
             moffett_unit_number,
-            moffett_hydraulics,
             driver_signature,
         ]
 
