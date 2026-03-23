@@ -4,7 +4,6 @@ from google.oauth2.service_account import Credentials
 from datetime import datetime, date
 
 st.set_page_config(page_title="Equipment Inspection", layout="wide")
-
 st.title("Equipment Inspection Check-In Sheet")
 
 
@@ -21,12 +20,14 @@ def get_worksheet():
     )
 
     client = gspread.authorize(creds)
-
     spreadsheet = client.open_by_key(st.secrets["google_sheet"]["sheet_id"])
-    worksheet = spreadsheet.worksheet(
-        st.secrets["google_sheet"]["worksheet_name"])
-
+    worksheet = spreadsheet.worksheet(st.secrets["google_sheet"]["worksheet_name"])
     return worksheet
+
+
+def get_next_row(worksheet):
+    col_a = worksheet.col_values(1)
+    return len(col_a) + 1
 
 
 with st.form("inspection_form"):
@@ -60,7 +61,7 @@ if submitted:
         worksheet = get_worksheet()
 
         row = [
-            datetime.now().isoformat(),
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             company_name,
             driver_name,
             inspection_date.isoformat(),
@@ -72,10 +73,14 @@ if submitted:
             trailer_tires,
             moffett_unit_number,
             moffett_hydraulics,
-            driver_signature
+            driver_signature,
         ]
 
-        worksheet.append_row(row, value_input_option="USER_ENTERED")
+        next_row = get_next_row(worksheet)
+        end_col_letter = chr(64 + len(row))  # 13 columns = M
+        cell_range = f"A{next_row}:{end_col_letter}{next_row}"
+
+        worksheet.update(cell_range, [row], value_input_option="USER_ENTERED")
         st.success("Inspection submitted successfully!")
 
     except Exception as e:
