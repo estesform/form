@@ -53,7 +53,6 @@ if submitted:
             driver_name,
             inspection_date.isoformat(),
             route_job,
-            time_recorded,
             truck_unit_number,
             trailer_unit_number,
             moffett_unit_number,
