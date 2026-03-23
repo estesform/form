@@ -41,15 +41,12 @@ with st.form("inspection_form"):
 
     st.subheader("Truck")
     truck_unit_number = st.text_input("Truck Unit #")
-    truck_brakes = st.selectbox("Brakes", ["OK", "Needs Repair"])
 
     st.subheader("Trailer")
     trailer_unit_number = st.text_input("Trailer Unit #")
-    trailer_tires = st.selectbox("Trailer Tires", ["OK", "Needs Repair"])
 
     st.subheader("Moffett")
     moffett_unit_number = st.text_input("Moffett Unit #")
-    moffett_hydraulics = st.selectbox("Hydraulics", ["OK", "Needs Repair"])
 
     driver_signature = st.text_input("Driver Signature")
 
