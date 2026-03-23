@@ -33,7 +33,7 @@ def get_next_row(worksheet):
 with st.form("inspection_form"):
     st.subheader("General Info")
 
-    company_name = st.text_input("Company Name")
+    
     driver_name = st.text_input("Driver Name")
     inspection_date = st.date_input("Date", value=date.today())
     route_job = st.text_input("Route / Job #")
