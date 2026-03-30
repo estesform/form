@@ -6,6 +6,41 @@ from datetime import datetime, date
 st.set_page_config(page_title="Equipment Inspection", layout="wide")
 st.title("Equipment Inspection Check-In Sheet")
 
+st.markdown("""
+<style>
+/* tighter spacing between elements */
+.block-container {
+    padding-top: 1rem;
+    padding-bottom: 2rem;
+}
+
+/* reduce extra gap between widgets */
+div[data-testid="stVerticalBlock"] > div:has(> div[data-testid="stTextInput"]),
+div[data-testid="stVerticalBlock"] > div:has(> div[data-testid="stSelectbox"]) {
+    margin-bottom: 0.2rem;
+}
+
+/* make labels smaller */
+.stTextInput label,
+.stSelectbox label {
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+}
+
+/* slightly tighter input/select appearance */
+div[data-baseweb="select"] > div,
+div[data-testid="stTextInput"] input {
+    min-height: 2.5rem !important;
+}
+
+/* make placeholders a little softer */
+input::placeholder {
+    color: #888 !important;
+    opacity: 1 !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 
 @st.cache_resource
 def get_worksheet():
@@ -37,22 +72,20 @@ def checklist_section(section_title, items):
     for item in items:
         st.markdown(f"**{item}**")
 
-        col1, col2 = st.columns([1, 3])
+        col1, col2 = st.columns([1, 2], gap="small")
 
         with col1:
             status = st.selectbox(
-                f"Status for {section_title} - {item}",
+                "Status",
                 ["OK", "Needs Repair"],
-                key=f"{section_title}_{item}_status",
-                label_visibility="collapsed"
+                key=f"{section_title}_{item}_status"
             )
 
         with col2:
             note = st.text_input(
-                f"Notes for {section_title} - {item}",
+                "Notes",
                 key=f"{section_title}_{item}_note",
-                label_visibility="collapsed",
-                placeholder="Notes"
+                placeholder="Describe issue"
             )
 
         results[item] = {
@@ -60,7 +93,7 @@ def checklist_section(section_title, items):
             "note": note.strip()
         }
 
-        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
 
     return results
 
