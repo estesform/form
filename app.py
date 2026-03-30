@@ -9,13 +9,13 @@ st.title("Equipment Inspection Check-In Sheet")
 st.markdown("""
 <style>
 .block-container {
-    padding-top: 1rem;
-    padding-bottom: 2rem;
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
 }
 
 /* tighter spacing overall */
 div[data-testid="stVerticalBlock"] > div {
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.1rem;
 }
 
 /* section item title */
@@ -35,7 +35,7 @@ div[data-testid="stVerticalBlock"] > div {
     margin-left: 0.75rem;
     background: white;
     display: inline-block;
-    padding: 0 0.3rem;
+    padding: 0 0.1rem;
     position: relative;
     z-index: 10;
 }
