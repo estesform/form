@@ -34,54 +34,50 @@ def checklist_section(section_title, items):
     st.subheader(section_title)
     results = {}
 
-    header_cols = st.columns([3, 1, 2])
-    with header_cols[0]:
-        st.markdown("**Item**")
-    with header_cols[1]:
-        st.markdown("**Status**")
-    with header_cols[2]:
-        st.markdown("**Notes**")
-
     for item in items:
-        col1, col2, col3 = st.columns([3, 1, 2])
+        st.markdown(f"**{item}**")
+
+        col1, col2 = st.columns([1, 3])
 
         with col1:
-            st.write(item)
-
-        with col2:
             status = st.selectbox(
-                f"Status for {item}",
+                f"Status for {section_title} - {item}",
                 ["OK", "Needs Repair"],
                 key=f"{section_title}_{item}_status",
                 label_visibility="collapsed"
             )
 
-        note = ""
-        with col3:
-            if status == "Needs Repair":
-                note = st.text_input(
-                    f"Notes for {item}",
-                    key=f"{section_title}_{item}_note",
-                    label_visibility="collapsed",
-                    placeholder="Describe issue"
-                )
+        with col2:
+            note = st.text_input(
+                f"Notes for {section_title} - {item}",
+                key=f"{section_title}_{item}_note",
+                label_visibility="collapsed",
+                placeholder="Notes"
+            )
 
         results[item] = {
             "status": status,
-            "note": note
+            "note": note.strip()
         }
+
+        st.markdown("<br>", unsafe_allow_html=True)
 
     return results
 
 
 def format_section_results(results):
     entries = []
+
     for item, data in results.items():
-        if data["status"] == "Needs Repair":
-            if data["note"].strip():
-                entries.append(f"{item}: Needs Repair ({data['note']})")
+        status = data["status"]
+        note = data["note"]
+
+        if status == "Needs Repair":
+            if note:
+                entries.append(f"{item}: Needs Repair ({note})")
             else:
                 entries.append(f"{item}: Needs Repair")
+
     return " | ".join(entries) if entries else "PASS"
 
 
