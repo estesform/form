@@ -8,35 +8,73 @@ st.title("Equipment Inspection Check-In Sheet")
 
 st.markdown("""
 <style>
-/* tighter spacing between elements */
 .block-container {
     padding-top: 1rem;
     padding-bottom: 2rem;
 }
 
-/* reduce extra gap between widgets */
-div[data-testid="stVerticalBlock"] > div:has(> div[data-testid="stTextInput"]),
-div[data-testid="stVerticalBlock"] > div:has(> div[data-testid="stSelectbox"]) {
+/* tighter spacing overall */
+div[data-testid="stVerticalBlock"] > div {
+    margin-bottom: 0.35rem;
+}
+
+/* section item title */
+.inspection-item-label {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 0.35rem;
     margin-bottom: 0.2rem;
 }
 
-/* make labels smaller */
-.stTextInput label,
-.stSelectbox label {
-    font-size: 0.85rem !important;
-    font-weight: 600 !important;
+/* custom floating-ish label */
+.notes-floating-label {
+    color: #6a00cc;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: -0.35rem;
+    margin-left: 0.75rem;
+    background: white;
+    display: inline-block;
+    padding: 0 0.3rem;
+    position: relative;
+    z-index: 10;
 }
 
-/* slightly tighter input/select appearance */
-div[data-baseweb="select"] > div,
+/* make select compact */
+div[data-baseweb="select"] {
+    min-width: 110px !important;
+}
+
+div[data-baseweb="select"] > div {
+    min-height: 2.8rem !important;
+    border-radius: 12px !important;
+}
+
+/* style text inputs more like your screenshot */
 div[data-testid="stTextInput"] input {
-    min-height: 2.5rem !important;
+    min-height: 2.8rem !important;
+    border: 3px solid #6a00cc !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+    padding-top: 0.9rem !important;
+    padding-bottom: 0.45rem !important;
 }
 
-/* make placeholders a little softer */
-input::placeholder {
-    color: #888 !important;
+/* keep hidden labels from leaving awkward space */
+div[data-testid="stTextInput"] label,
+div[data-testid="stSelectbox"] label {
+    display: none !important;
+}
+
+/* placeholder styling */
+div[data-testid="stTextInput"] input::placeholder {
+    color: #999 !important;
     opacity: 1 !important;
+}
+
+/* tighten column alignment a bit */
+div[data-testid="column"] {
+    padding-top: 0 !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -70,22 +108,25 @@ def checklist_section(section_title, items):
     results = {}
 
     for item in items:
-        st.markdown(f"**{item}**")
+        st.markdown(f'<div class="inspection-item-label">{item}</div>', unsafe_allow_html=True)
 
-        col1, col2 = st.columns([1, 2], gap="small")
+        col1, col2 = st.columns([1, 2.6], gap="small")
 
         with col1:
             status = st.selectbox(
-                "Status",
+                f"Status for {section_title} - {item}",
                 ["OK", "Needs Repair"],
-                key=f"{section_title}_{item}_status"
+                key=f"{section_title}_{item}_status",
+                label_visibility="collapsed"
             )
 
         with col2:
+            st.markdown('<div class="notes-floating-label">Label</div>', unsafe_allow_html=True)
             note = st.text_input(
-                "Notes",
+                f"Notes for {section_title} - {item}",
                 key=f"{section_title}_{item}_note",
-                placeholder="Describe issue"
+                label_visibility="collapsed",
+                placeholder="Input text"
             )
 
         results[item] = {
