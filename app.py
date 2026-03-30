@@ -9,72 +9,17 @@ st.title("Equipment Inspection Check-In Sheet")
 st.markdown("""
 <style>
 .block-container {
-    padding-top: 0.2rem;
-    padding-bottom: 0.2rem;
+    padding-top: 1rem;
+    padding-bottom: 2rem;
 }
 
-/* tighter spacing overall */
-div[data-testid="stVerticalBlock"] > div {
-    margin-bottom: 0.1rem;
+div[data-testid="stTextInput"] {
+    margin-bottom: 0.35rem !important;
 }
 
-/* section item title */
-.inspection-item-label {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-top: 0.35rem;
-    margin-bottom: 0.2rem;
-}
-
-/* custom floating-ish label */
-.notes-floating-label {
-    color: #6a00cc;
-    font-size: 0.82rem;
-    font-weight: 600;
-    margin-bottom: -0.35rem;
-    margin-left: 0.75rem;
-    background: white;
-    display: inline-block;
-    padding: 0 0.1rem;
-    position: relative;
-    z-index: 10;
-}
-
-/* make select compact */
-div[data-baseweb="select"] {
-    min-width: 110px !important;
-}
-
-div[data-baseweb="select"] > div {
-    min-height: 2.8rem !important;
-    border-radius: 12px !important;
-}
-
-/* style text inputs more like your screenshot */
 div[data-testid="stTextInput"] input {
-    min-height: 2.8rem !important;
-    border: 3px solid #6a00cc !important;
-    border-radius: 12px !important;
-    box-shadow: none !important;
-    padding-top: 0.9rem !important;
-    padding-bottom: 0.45rem !important;
-}
-
-/* keep hidden labels from leaving awkward space */
-div[data-testid="stTextInput"] label,
-div[data-testid="stSelectbox"] label {
-    display: none !important;
-}
-
-/* placeholder styling */
-div[data-testid="stTextInput"] input::placeholder {
-    color: #999 !important;
-    opacity: 1 !important;
-}
-
-/* tighten column alignment a bit */
-div[data-testid="column"] {
-    padding-top: 0 !important;
+    min-height: 2.6rem !important;
+    border-radius: 10px !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -103,38 +48,45 @@ def get_next_row(worksheet):
     return len(col_a) + 1
 
 
-def checklist_section(section_title, items):
+def init_prefilled_field(key, prefix):
+    if key not in st.session_state:
+        st.session_state[key] = prefix
+
+
+def clean_prefilled_value(value, prefix):
+    if not value:
+        return ""
+
+    if value == prefix:
+        return ""
+
+    if value.startswith(prefix):
+        return value[len(prefix):].strip()
+
+    return value.strip()
+
+
+def inspection_text_section(section_title, items):
     st.subheader(section_title)
     results = {}
 
     for item in items:
-        st.markdown(f'<div class="inspection-item-label">{item}</div>', unsafe_allow_html=True)
+        key = f"{section_title}_{item}_note"
+        prefix = f"{item}: "
 
-        col1, col2 = st.columns([1, 2.6], gap="small")
+        init_prefilled_field(key, prefix)
 
-        with col1:
-            status = st.selectbox(
-                f"Status for {section_title} - {item}",
-                ["OK", "Needs Repair"],
-                key=f"{section_title}_{item}_status",
-                label_visibility="collapsed"
-            )
-
-        with col2:
-            st.markdown('<div class="notes-floating-label">Label</div>', unsafe_allow_html=True)
-            note = st.text_input(
-                f"Notes for {section_title} - {item}",
-                key=f"{section_title}_{item}_note",
-                label_visibility="collapsed",
-                placeholder="Input text"
-            )
+        value = st.text_input(
+            label="",
+            key=key,
+            placeholder=item
+        )
 
         results[item] = {
-            "status": status,
-            "note": note.strip()
+            "full_text": value,
+            "prefix": prefix,
+            "note_only": clean_prefilled_value(value, prefix)
         }
-
-        st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
 
     return results
 
@@ -143,14 +95,11 @@ def format_section_results(results):
     entries = []
 
     for item, data in results.items():
-        status = data["status"]
-        note = data["note"]
+        note_only = data["note_only"]
+        prefix = data["prefix"]
 
-        if status == "Needs Repair":
-            if note:
-                entries.append(f"{item}: Needs Repair ({note})")
-            else:
-                entries.append(f"{item}: Needs Repair")
+        if note_only:
+            entries.append(f"{prefix}{note_only}")
 
     return " | ".join(entries) if entries else "PASS"
 
@@ -203,13 +152,13 @@ with st.form("inspection_form"):
     driver_signature = st.text_input("Driver Signature")
 
     st.markdown("---")
-    truck_results = checklist_section("Truck Inspection", truck_items)
+    truck_results = inspection_text_section("Truck Inspection", truck_items)
 
     st.markdown("---")
-    trailer_results = checklist_section("Trailer Inspection", trailer_items)
+    trailer_results = inspection_text_section("Trailer Inspection", trailer_items)
 
     st.markdown("---")
-    lift_results = checklist_section("Lift Inspection", lift_items)
+    lift_results = inspection_text_section("Lift Inspection", lift_items)
 
     submitted = st.form_submit_button("Submit Inspection")
 
