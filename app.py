@@ -14,7 +14,7 @@ st.markdown("""
 
 /* spacing between each input */
 .input-block {
-    margin-bottom: 10px;
+    margin-bottom: 2px;
 }
 
 /* label styling */
@@ -42,7 +42,7 @@ div[data-testid="stTextInput"] {
 
 .block-container {
     padding-top: 1rem;
-    padding-bottom: 2rem;
+    padding-bottom: 1rem;
 }
 
 </style>
@@ -166,13 +166,12 @@ with st.form("inspection_form"):
     moffett_unit_number = st.text_input("Moffett Unit #")
     driver_signature = st.text_input("Driver Signature")
 
-    st.markdown("---")
+    
     truck_results = inspection_section("Truck Inspection", truck_items)
 
-    st.markdown("---")
+
     trailer_results = inspection_section("Trailer Inspection", trailer_items)
 
-    st.markdown("---")
     lift_results = inspection_section("Lift Inspection", lift_items)
 
     submitted = st.form_submit_button("Submit Inspection")
