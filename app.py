@@ -14,7 +14,7 @@ st.markdown("""
 
 /* spacing between each input */
 .input-block {
-    margin-bottom: 2px;
+    margin-bottom: 0;
 }
 
 /* label styling */
@@ -23,7 +23,7 @@ st.markdown("""
     font-size: 0.7rem;
     font-weight: 600;
     margin-left: 10px;
-    margin-bottom: 2px;
+    margin-bottom: 0;
     display: block;
 }
 
@@ -32,7 +32,7 @@ div[data-testid="stTextInput"] input {
     border: 3px solid #6a00d4 !important;
     border-radius: 12px !important;
     height: 52px !important;
-    padding-top: 10px !important;
+    padding-top: 0 !important;
 }
 
 /* remove default spacing */
@@ -41,8 +41,8 @@ div[data-testid="stTextInput"] {
 }
 
 .block-container {
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 </style>
@@ -168,7 +168,6 @@ with st.form("inspection_form"):
 
     
     truck_results = inspection_section("Truck Inspection", truck_items)
-
 
     trailer_results = inspection_section("Trailer Inspection", trailer_items)
 
