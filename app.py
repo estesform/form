@@ -7,24 +7,30 @@ st.set_page_config(page_title="Equipment Inspection", layout="wide")
 st.title("Equipment Inspection Check-In Sheet")
 
 # ================================
-# 🔥 STYLING (TIGHT FLOAT LABEL)
+# 🔥 STYLING (TIGHT + FIXED SPACING)
 # ================================
 st.markdown("""
 <style>
 
-/* spacing between each input */
-.input-block {
-    margin-bottom: 0;
+/* 🔴 KILL ALL STREAMLIT DEFAULT SPACING */
+div[data-testid="stVerticalBlock"] > div {
+    margin-bottom: 6px !important;
 }
 
-/* label styling */
-.floating-label {
-    color: #6a00d4;
-    font-size: 0.7rem;
-    font-weight: 600;
-    margin-left: 10px;
-    margin-bottom: 0;
-    display: block;
+/* remove markdown spacing */
+div[data-testid="stMarkdownContainer"] p {
+    margin-bottom: 0px !important;
+}
+
+/* tighten subheaders */
+div[data-testid="stSubheader"] {
+    margin-top: 10px !important;
+    margin-bottom: 5px !important;
+}
+
+/* form spacing */
+div[data-testid="stForm"] {
+    gap: 0px !important;
 }
 
 /* input styling */
@@ -35,14 +41,15 @@ div[data-testid="stTextInput"] input {
     padding-top: 0 !important;
 }
 
-/* remove default spacing */
+/* remove extra spacing around inputs */
 div[data-testid="stTextInput"] {
     margin-bottom: 0px !important;
 }
 
+/* page padding */
 .block-container {
-    padding-top: 0;
-    padding-bottom: 0;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 </style>
@@ -76,14 +83,18 @@ def get_next_row(worksheet):
 
 
 # ================================
-# 🧠 FLOATING INPUT FUNCTION
+# 🧠 FLOATING INPUT (FIXED)
 # ================================
 def floating_input(label, key):
-    st.markdown('<div class="input-block">', unsafe_allow_html=True)
-    st.markdown(f'<label class="floating-label">{label}</label>', unsafe_allow_html=True)
-    value = st.text_input("", key=key, placeholder="Enter notes...")
-    st.markdown('</div>', unsafe_allow_html=True)
-    return value.strip()
+    st.markdown(f"""
+    <div style="margin-bottom:4px;">
+        <div style="color:#6a00d4; font-size:0.7rem; font-weight:600; margin-left:10px;">
+            {label}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    return st.text_input("", key=key, placeholder="Enter notes...").strip()
 
 
 # ================================
@@ -166,11 +177,8 @@ with st.form("inspection_form"):
     moffett_unit_number = st.text_input("Moffett Unit #")
     driver_signature = st.text_input("Driver Signature")
 
-    
     truck_results = inspection_section("Truck Inspection", truck_items)
-
     trailer_results = inspection_section("Trailer Inspection", trailer_items)
-
     lift_results = inspection_section("Lift Inspection", lift_items)
 
     submitted = st.form_submit_button("Submit Inspection")
