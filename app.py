@@ -1,221 +1,153 @@
 import streamlit as st
-import gspread
-from google.oauth2.service_account import Credentials
-from datetime import datetime, date
+import pathlib
+from datetime import date
 
-st.set_page_config(page_title="Equipment Inspection", layout="wide")
-st.title("Equipment Inspection Check-In Sheet")
-
-# ================================
-# 🔥 STYLING (TIGHT + FIXED SPACING)
-# ================================
-st.markdown("""
-<style>
-
-/* 🔴 KILL ALL STREAMLIT DEFAULT SPACING */
-div[data-testid="stVerticalBlock"] > div {
-    margin-bottom: 6px !important;
-}
-
-/* remove markdown spacing */
-div[data-testid="stMarkdownContainer"] p {
-    margin-bottom: 0px !important;
-}
-
-/* tighten subheaders */
-div[data-testid="stSubheader"] {
-    margin-top: 10px !important;
-    margin-bottom: 5px !important;
-}
-
-/* form spacing */
-div[data-testid="stForm"] {
-    gap: 0px !important;
-}
-
-/* input styling */
-div[data-testid="stTextInput"] input {
-    border: 3px solid #6a00d4 !important;
-    border-radius: 12px !important;
-    height: 52px !important;
-    padding-top: 0 !important;
-}
-
-/* remove extra spacing around inputs */
-div[data-testid="stTextInput"] {
-    margin-bottom: 0px !important;
-}
-
-/* page padding */
-.block-container {
-    padding-top: 10px;
-    padding-bottom: 10px;
-}
-
-</style>
-""", unsafe_allow_html=True)
+# Load CSS
 
 
-# ================================
-# 🔧 GOOGLE SHEETS
-# ================================
-@st.cache_resource
-def get_worksheet():
-    scope = [
-        "https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/drive",
-    ]
-
-    creds = Credentials.from_service_account_info(
-        dict(st.secrets["gcp_service_account"]),
-        scopes=scope
-    )
-
-    client = gspread.authorize(creds)
-    spreadsheet = client.open_by_key(st.secrets["google_sheet"]["sheet_id"])
-    worksheet = spreadsheet.worksheet(st.secrets["google_sheet"]["worksheet_name"])
-    return worksheet
+def load_css(file_path):
+    with open(file_path) as f:
+        st.html(f"<style>{f.read()}</style>")
 
 
-def get_next_row(worksheet):
-    col_a = worksheet.col_values(1)
-    return len(col_a) + 1
+css_path = pathlib.Path("assets/styles2.css")
+load_css(css_path)
 
-
-# ================================
-# 🧠 FLOATING INPUT (FIXED)
-# ================================
-def floating_input(label, key):
-    st.markdown(f"""
-    <div style="margin-bottom:4px;">
-        <div style="color:#6a00d4; font-size:0.7rem; font-weight:600; margin-left:10px;">
-            {label}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    return st.text_input("", key=key, placeholder="Enter notes...").strip()
-
-
-# ================================
-# 🧠 SECTION BUILDER
-# ================================
-def inspection_section(section_title, items):
-    st.subheader(section_title)
-    results = {}
-
-    for item in items:
-        value = floating_input(item, f"{section_title}_{item}")
-        results[item] = value
-
-    return results
-
-
-# ================================
-# 🧠 FORMAT RESULTS
-# ================================
-def format_section_results(results):
-    entries = []
-
-    for item, note in results.items():
-        if note:
-            entries.append(f"{item}: {note}")
-
-    return " | ".join(entries) if entries else "PASS"
-
-
-# ================================
-# 📋 CHECKLIST ITEMS
-# ================================
-truck_items = [
-    "Truck Unit #",
+truck_list = [
     "Lights & Reflectors",
     "Tires & Wheels",
     "Brakes",
     "Steering & Suspension",
     "Fluid Levels",
     "Horn & Mirrors",
-    "Safety Equipment",
-    "Cab & Exterior Cleanliness",
+    "Safety Equipement",
+    "Cab & Exterior Cleanliness"
 ]
 
-trailer_items = [
-    "Trailer Unit #",
-    "Trailer Interior Clean & Debris Free",
-    "Trailer Floor Swept & Clean",
-    "Doors, Hinges & Latches",
-    "Trailer Lights & Electrical",
+trailer_list = [
+    "Trailer Swept & Clean",
+    "Door & Hinges",
+    "Lights & Electrical",
     "Tires & Wheels",
     "Brakes & Brake Lines",
     "Suspension & Undercarriage",
-    "Reflective Tape & Markings",
-    "Load Securement Equipment",
+    "Reflective tapr & Markings",
+    "Load Securement Equipement"
 ]
 
-lift_items = [
-    "Moffett Unit #",
-    "Mounting Secure",
-    "All Lights Functional",
+moffett_list = [
+    "Mouting Secure",
+    "Lights",
     "Tires & Guards",
     "Operational Controls",
-    "Hydraulic / Fluid Leaks",
-    "Cleanliness (Mud/Debris Free)",
+    "Hydrolic/Fluid Leaks",
+    "Cleanliness (Mud/Debris Free)"
 ]
 
 
-# ================================
-# 🧾 FORM
-# ================================
-with st.form("inspection_form"):
-    st.subheader("General Info")
+def inspection_rows(items, prefix):
+    for i, label in enumerate(items):
+        key = f"{prefix}_item_{i}"
 
-    driver_name = st.text_input("Driver Name")
-    inspection_date = st.date_input("Date", value=date.today())
-    route_job = st.text_input("Route / Job #")
-    truck_unit_number = st.text_input("Truck Unit #")
-    trailer_unit_number = st.text_input("Trailer Unit #")
-    moffett_unit_number = st.text_input("Moffett Unit #")
-    driver_signature = st.text_input("Driver Signature")
+        value = st.radio(
+            label,
+            ["OK", "Needs Repair"],
+            index=None,
+            horizontal=True,
+            key=key,
+        )
 
-    truck_results = inspection_section("Truck Inspection", truck_items)
-    trailer_results = inspection_section("Trailer Inspection", trailer_items)
-    lift_results = inspection_section("Lift Inspection", lift_items)
-
-    submitted = st.form_submit_button("Submit Inspection")
+        if value == "Needs Repair":
+            st.text_input(
+                "Repairs:",
+                key=f"{key}_notes"
+            )
 
 
-# ================================
-# 💾 SAVE
-# ================================
-if submitted:
-    try:
-        worksheet = get_worksheet()
+with st.container(key="header_title"):
+    st.subheader("Equipement Inspection Check-In")
 
-        truck_summary = format_section_results(truck_results)
-        trailer_summary = format_section_results(trailer_results)
-        lift_summary = format_section_results(lift_results)
+with st.container(key="top_inputs_section"):
+    st.date_input("Date", value=date.today(), key="inspection_date")
+    st.text_input("Driver Signature", key="driver_signature")
+    st.text_input("Route/Job #", key="route_number")
+    st.text_input("Truck #", key="truck_number")
+    st.text_input("Trailer #", key="trailer_number")
+    st.text_input("Moffett #", key="moffett_number")
 
-        row = [
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            driver_name,
-            inspection_date.isoformat(),
-            route_job,
-            truck_unit_number,
-            trailer_unit_number,
-            moffett_unit_number,
-            driver_signature,
-            truck_summary,
-            trailer_summary,
-            lift_summary,
+with st.container(key="title_section_truck"):
+    st.subheader("Truck Inspection")
+
+with st.container(key="inspection_section_truck"):
+    inspection_rows(truck_list, "truck")
+
+with st.container(key="title_section_trailer"):
+    st.subheader("Trailer Inspection")
+
+with st.container(key="inspection_section_trailer"):
+    inspection_rows(trailer_list, "trailer")
+
+with st.container(key="title_section_moffett"):
+    st.subheader("Moffett Inspection")
+
+with st.container(key="inspection_section_moffett"):
+    inspection_rows(moffett_list, "moffett")
+
+with st.container(key="corners_section"):
+    st.number_input("Corners Count", min_value=0, step=1, key="corners_count")
+
+with st.container(key="submit_section"):
+    if st.button("Submit"):
+        errors = []
+
+        # Check top required fields
+        required_fields = [
+            ("Driver Signature", "driver_signature"),
+            ("Route/Job #", "route_number"),
+            ("Truck #", "truck_number"),
+            ("Trailer #", "trailer_number"),
+            ("Moffett #", "moffett_number"),
+            ("Corners Count", "corners_count")
         ]
 
-        next_row = get_next_row(worksheet)
-        end_col_letter = chr(64 + len(row))
-        cell_range = f"A{next_row}:{end_col_letter}{next_row}"
+        for label, key in required_fields:
+            value = st.session_state.get(key)
 
-        worksheet.update(cell_range, [row], value_input_option="USER_ENTERED")
+            if value is None:
+                errors.append(f"{label} is required")
 
-        st.success("Inspection submitted successfully!")
+            elif isinstance(value, str) and value.strip() == "":
+                errors.append(f"{label} is required")
 
-    except Exception as e:
-        st.exception(e)
+            elif key == "corners_count" and value == 0:
+                errors.append("Corners Count must be greater than 0")
+
+        # Check all inspection sections
+        sections = [
+            ("truck", truck_list),
+            ("trailer", trailer_list),
+            ("moffett", moffett_list)
+        ]
+
+        for prefix, items in sections:
+            for i, label in enumerate(items):
+                key = f"{prefix}_item_{i}"
+                value = st.session_state.get(key)
+
+                if value is None:
+                    errors.append(f"{label} is not selected")
+
+                elif value == "Needs Repair":
+                    notes_key = f"{key}_notes"
+                    notes = st.session_state.get(notes_key, "")
+
+                    if isinstance(notes, str) and notes.strip() == "":
+                        errors.append(f"{label} needs repair notes")
+
+        # Show result
+        if len(errors) == 0:
+            st.success("Inspection Submitted ✅")
+        else:
+            st.error("Please fix the following:")
+            for err in errors:
+                st.write(f"- {err}")
