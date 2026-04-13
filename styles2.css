@@ -1,0 +1,134 @@
+@media (max-width: 768px) {
+    .st-key-header_title h3 {
+        margin: 0 0 4vw 0 !important;
+        padding: 0 !important;
+        text-align: center;
+    }
+
+    .st-key-inspection_section_truck p,
+    .st-key-inspection_section_trailer p,
+    .st-key-inspection_section_moffett p{
+        position: relative;
+        left: 10vw;
+        top: 13vw;
+        white-space: normal !important;
+        overflow-wrap: break-word !important;
+        word-break: normal !important;
+        max-width: 30vw;
+        line-height: 4vw !important;
+    }
+    
+    .st-key-top_inputs_section p{
+        position: relative;
+        top: 6vw;
+        left: 2vw;
+    }
+
+    .st-key-top_inputs_section input{
+        position: relative;
+        top: 2vw;
+    }
+
+
+    div.stVerticalBlock.st-key-top_inputs_section {
+        gap: 0rem !important;
+    }
+
+    div.stVerticalBlock.st-key-inspection_section_truck,
+    div.stVerticalBlock.st-key-inspection_section_trailer,
+    div.stVerticalBlock.st-key-inspection_section_moffett {
+        gap: 0rem !important;
+    }
+    .st-key-title_section_moffett div[data-testid="stHeadingWithActionElements"]{
+        justify-content: center !important;
+    }
+
+    div.st-key-title_section_truck h3,
+    div.st-key-title_section_trailer h3,
+    div.st-key-title_section_moffett h3{
+        margin-top: 7vw;
+        padding: 0;
+        justify-content: center !important;
+    }
+
+    /* Radio wrapper */
+    div[data-testid="stRadio"] {
+        margin-top: 0 !important;
+    }
+
+    div[data-testid="stRadio"] > div {
+        background: transparent !important;
+    }
+
+    div[data-testid="stRadio"] div[role="radiogroup"] {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: flex-end !important;
+        gap: 0.7rem !important;
+        flex-wrap: nowrap !important;
+        position: relative;
+        left:47vw
+    }
+
+    /* Make radio options circular */
+    div[data-testid="stRadio"] label[data-baseweb="radio"] {
+        margin: 0 !important;
+        width: 60px !important;
+        height: 60px !important;
+        min-width: 60px !important;
+        border-radius: 999px !important;
+        border: none !important;
+        background: #d9dde3 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        cursor: pointer !important;
+    }
+
+    /* Hide default radio dot */
+    div[data-testid="stRadio"] label[data-baseweb="radio"] > div:first-child {
+        display: none !important;
+    }
+
+    /* Hide default text */
+    div[data-testid="stRadio"] label[data-baseweb="radio"] p {
+        font-size: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Symbols */
+    div[data-testid="stRadio"] label[data-baseweb="radio"]:nth-of-type(1)::before {
+        content: "\2713";
+        font-size: 2rem;
+        line-height: 1;
+        color: #7b8796;
+        font-weight: 700;
+    }
+
+    div[data-testid="stRadio"] label[data-baseweb="radio"]:nth-of-type(2)::before {
+        content: "\2715";
+        font-size: 2rem;
+        line-height: 1;
+        color: #7b8796;
+        font-weight: 700;
+    }
+
+    /* Selected colors */
+    div[data-testid="stRadio"] label[data-baseweb="radio"]:nth-of-type(1):has(input:checked) {
+        background: #14923b !important;
+    }
+
+    div[data-testid="stRadio"] label[data-baseweb="radio"]:nth-of-type(1):has(input:checked)::before {
+        color: white !important;
+    }
+
+    div[data-testid="stRadio"] label[data-baseweb="radio"]:nth-of-type(2):has(input:checked) {
+        background: #c5162e !important;
+    }
+
+    div[data-testid="stRadio"] label[data-baseweb="radio"]:nth-of-type(2):has(input:checked)::before {
+        color: white !important;
+    }
+
+}
