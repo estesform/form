@@ -10,7 +10,7 @@ def load_css(file_path):
         st.html(f"<style>{f.read()}</style>")
 
 
-css_path = pathlib.Path("assets/styles2.css")
+css_path = pathlib.Path("styles2.css")
 load_css(css_path)
 
 truck_list = [
