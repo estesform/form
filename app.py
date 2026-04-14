@@ -347,25 +347,3 @@ with st.container(key="submit_section"):
                 st.rerun()
             except Exception as e:
                 st.error(f"Could not save to Google Sheets: {e}")
-
-if st.button("Test Sheet Tabs"):
-    try:
-        creds_info = dict(st.secrets["gcp_service_account"])
-
-        scopes = [
-            "https://www.googleapis.com/auth/spreadsheets",
-            "https://www.googleapis.com/auth/drive"
-        ]
-
-        credentials = Credentials.from_service_account_info(
-            creds_info, scopes=scopes
-        )
-        client = gspread.authorize(credentials)
-
-        sheet_id = st.secrets["google_sheet"]["sheet_id"]
-        spreadsheet = client.open_by_key(sheet_id)
-
-        st.write([ws.title for ws in spreadsheet.worksheets()])
-
-    except Exception as e:
-        st.error(e)
