@@ -370,16 +370,3 @@ if st.button("Test Sheet Tabs"):
 
     except Exception as e:
         st.error(e)
-
-
-if st.button("TEST WRITE"):
-    try:
-        worksheet = get_worksheet()
-
-        # Write "TEST" into cell A2 (first row under headers)
-        worksheet.update("A2", "TEST")
-
-        st.success("Wrote TEST to A2 ✅")
-
-    except Exception as e:
-        st.error(f"Write failed: {e}")
