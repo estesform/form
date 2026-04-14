@@ -138,13 +138,14 @@ def get_worksheet():
     ]
 
     credentials = Credentials.from_service_account_info(
-        creds_info, scopes=scopes)
+        creds_info, scopes=scopes
+    )
     client = gspread.authorize(credentials)
 
-    spreadsheet_name = st.secrets["sheets"]["spreadsheet_name"]
-    worksheet_name = st.secrets["sheets"]["worksheet_name"]
+    sheet_id = st.secrets["google_sheet"]["sheet_id"]
+    worksheet_name = st.secrets["google_sheet"]["worksheet_name"]
 
-    spreadsheet = client.open(spreadsheet_name)
+    spreadsheet = client.open_by_key(sheet_id)
     worksheet = spreadsheet.worksheet(worksheet_name)
     return worksheet
 
