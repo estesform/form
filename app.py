@@ -375,9 +375,20 @@ if st.button("TEST WRITE"):
     try:
         worksheet = get_worksheet()
 
-        worksheet.update([["TEST"]], "A2")
+        st.write("Spreadsheet title:", worksheet.spreadsheet.title)
+        st.write("Worksheet title:", worksheet.title)
 
-        st.success("Wrote TEST to A2 ✅")
+        next_row = len(worksheet.col_values(1)) + 1
+        st.write("Writing to row:", next_row)
+
+        test_value = "TEST_" + str(next_row)
+        worksheet.update_acell(f"A{next_row}", test_value)
+
+        # Read it back immediately
+        read_back = worksheet.acell(f"A{next_row}").value
+        st.write("Read back:", read_back)
+
+        st.success(f"Wrote {test_value} to A{next_row} ✅")
 
     except Exception as e:
         st.error(f"Write failed: {e}")
