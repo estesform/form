@@ -7,8 +7,6 @@ from datetime import datetime
 # =========================
 # LOAD CSS
 # =========================
-
-
 def load_css(file_path):
     with open(file_path, encoding="utf-8") as f:
         st.html(f"<style>{f.read()}</style>")
@@ -70,7 +68,7 @@ SHEET_COLUMNS = [
     "Moffett Repair Notes",
     "Lights & Reflectors (Truck)",
     "Tires & Wheels (Truck)",
-    "Tires & Wheels (Truck)",  # keeping exactly as you typed it
+    "Tires & Wheels (Truck)",
     "Brakes (Truck)",
     "Steering & Suspension (Truck)",
     "Fluid Levels (Truck)",
@@ -126,8 +124,6 @@ APP_TO_SHEET_MAP = {
 # =========================
 # GOOGLE SHEETS CONNECTION
 # =========================
-
-
 @st.cache_resource
 def get_worksheet():
     creds_info = dict(st.secrets["gcp_service_account"])
@@ -149,11 +145,10 @@ def get_worksheet():
     worksheet = spreadsheet.worksheet(worksheet_name)
     return worksheet
 
+
 # =========================
 # FORM BUILDERS
 # =========================
-
-
 def inspection_rows(items, prefix):
     for i, label in enumerate(items):
         key = f"{prefix}_item_{i}"
@@ -172,19 +167,20 @@ def inspection_rows(items, prefix):
                 key=f"{key}_notes"
             )
 
+
 # =========================
 # HELPERS
 # =========================
-
-
 def collect_repair_notes(prefix, items):
     notes_list = []
 
     for i, label in enumerate(items):
         key = f"{prefix}_item_{i}"
         value = st.session_state.get(key)
+
         if value == "Needs Repair":
             note = st.session_state.get(f"{key}_notes", "").strip()
+
             if note:
                 notes_list.append(f"{label}: {note}")
             else:
@@ -199,25 +195,30 @@ def build_row_data():
     row_data = {col: "" for col in SHEET_COLUMNS}
 
     # top fields
-    row_data["Driver Signature"] = st.session_state.get(
-        "driver_signature", "").strip()
+    row_data["Driver Signature"] = str(
+        st.session_state.get("driver_signature", "")
+    ).strip()
     row_data["Stamp"] = now.strftime("%Y-%m-%d %H:%M:%S")
     row_data["Date"] = now.strftime("%Y-%m-%d")
     row_data["Time"] = now.strftime("%H:%M:%S")
-    row_data["Route/Job #"] = st.session_state.get("route_number", "").strip()
+    row_data["Route/Job #"] = str(
+        st.session_state.get("route_number", "")
+    ).strip()
     row_data["Corner Boards"] = st.session_state.get("corners_count", 0)
-    row_data["Truck #"] = st.session_state.get("truck_number", "").strip()
-    row_data["Trailer Unit #"] = st.session_state.get(
-        "trailer_number", "").strip()
-    row_data["Moffett Unit #"] = st.session_state.get(
-        "moffett_number", "").strip()
+    row_data["Truck #"] = str(
+        st.session_state.get("truck_number", "")
+    ).strip()
+    row_data["Trailer Unit #"] = str(
+        st.session_state.get("trailer_number", "")
+    ).strip()
+    row_data["Moffett Unit #"] = str(
+        st.session_state.get("moffett_number", "")
+    ).strip()
 
     # roll-up repair notes
     row_data["Truck Repair Notes"] = collect_repair_notes("truck", truck_list)
-    row_data["Trailer Repair Notes"] = collect_repair_notes(
-        "trailer", trailer_list)
-    row_data["Moffett Repair Notes"] = collect_repair_notes(
-        "moffett", moffett_list)
+    row_data["Trailer Repair Notes"] = collect_repair_notes("trailer", trailer_list)
+    row_data["Moffett Repair Notes"] = collect_repair_notes("moffett", moffett_list)
 
     # inspection statuses
     for app_key, sheet_col in APP_TO_SHEET_MAP.items():
@@ -290,6 +291,7 @@ def clear_form():
         for i, _ in enumerate(items):
             key = f"{prefix}_item_{i}"
             notes_key = f"{key}_notes"
+
             if key in st.session_state:
                 del st.session_state[key]
             if notes_key in st.session_state:
@@ -329,7 +331,7 @@ with st.container(key="inspection_section_moffett"):
     inspection_rows(moffett_list, "moffett")
 
 with st.container(key="submit_section"):
-    if st.button("Submit"):
+    if st.button("Submit", key="submit_btn"):
         errors = validate_form()
 
         if errors:
@@ -338,40 +340,43 @@ with st.container(key="submit_section"):
                 st.write(f"- {err}")
         else:
             try:
-                row_values = build_row_data()
                 worksheet = get_worksheet()
+                row_values = build_row_data()
+
+                st.write(
+                    "Submit is writing to:",
+                    worksheet.spreadsheet.title,
+                    "/",
+                    worksheet.title
+                )
+
                 worksheet.append_row(
-                    row_values, value_input_option="USER_ENTERED")
+                    row_values,
+                    value_input_option="USER_ENTERED"
+                )
+
                 st.success("Inspection Submitted and saved to Google Sheets ✅")
-                clear_form()
-                st.rerun()
+
             except Exception as e:
                 st.error(f"Could not save to Google Sheets: {e}")
 
 
-if st.button("Test Sheet Tabs"):
+if st.button("Test Sheet Tabs", key="test_tabs_btn"):
     try:
-        creds_info = dict(st.secrets["gcp_service_account"])
+        worksheet = get_worksheet()
+        spreadsheet = worksheet.spreadsheet
+        tab_names = [ws.title for ws in spreadsheet.worksheets()]
 
-        scopes = [
-            "https://www.googleapis.com/auth/spreadsheets",
-            "https://www.googleapis.com/auth/drive"
-        ]
-
-        credentials = Credentials.from_service_account_info(
-            creds_info, scopes=scopes
-        )
-        client = gspread.authorize(credentials)
-
-        sheet_id = st.secrets["google_sheet"]["sheet_id"]
-        spreadsheet = client.open_by_key(sheet_id)
-
-        st.write([ws.title for ws in spreadsheet.worksheets()])
+        st.write("Spreadsheet title:", spreadsheet.title)
+        st.write("Spreadsheet ID:", spreadsheet.id)
+        st.write("Worksheet title:", worksheet.title)
+        st.write("All tabs:", tab_names)
 
     except Exception as e:
-        st.error(e)
+        st.error(f"Tab test failed: {e}")
 
-if st.button("TEST WRITE"):
+
+if st.button("TEST WRITE", key="test_write_btn"):
     try:
         worksheet = get_worksheet()
 
@@ -379,13 +384,12 @@ if st.button("TEST WRITE"):
         st.write("Worksheet title:", worksheet.title)
 
         next_row = len(worksheet.col_values(1)) + 1
-        st.write("Writing to row:", next_row)
+        test_value = f"TEST_{next_row}"
 
-        test_value = "TEST_" + str(next_row)
         worksheet.update_acell(f"A{next_row}", test_value)
 
-        # Read it back immediately
         read_back = worksheet.acell(f"A{next_row}").value
+        st.write("Writing to row:", next_row)
         st.write("Read back:", read_back)
 
         st.success(f"Wrote {test_value} to A{next_row} ✅")
