@@ -344,14 +344,17 @@ with st.container(key="submit_section"):
         else:
             try:
                 worksheet = get_worksheet()
-                row_values = build_row_data()
-
                 st.write(
                     "Submit is writing to:",
                     worksheet.spreadsheet.title,
                     "/",
                     worksheet.title
                 )
+
+                row_values = build_row_data()
+                st.write("Row type:", type(row_values))
+                st.write("Row length:", len(row_values))
+                st.write("First 10 values:", row_values[:10])
 
                 worksheet.append_row(
                     row_values,
@@ -361,8 +364,11 @@ with st.container(key="submit_section"):
                 st.success("Inspection Submitted and saved to Google Sheets ✅")
 
             except Exception as e:
-                st.error(f"Could not save to Google Sheets: {e}")
-
+                import traceback
+                st.error("Could not save to Google Sheets.")
+                st.write("Exception type:", type(e).__name__)
+                st.write("Exception repr:", repr(e))
+                st.code(traceback.format_exc())
 
 if st.button("Test Sheet Tabs", key="test_tabs_btn"):
     try:
