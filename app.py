@@ -10,7 +10,7 @@ def load_css(file_path):
         st.html(f"<style>{f.read()}</style>")
 
 
-css_path = pathlib.Path("styles2.css")
+css_path = pathlib.Path("assets/styles2.css")
 load_css(css_path)
 
 truck_list = [
@@ -31,7 +31,7 @@ trailer_list = [
     "Tires & Wheels",
     "Brakes & Brake Lines",
     "Suspension & Undercarriage",
-    "Reflective tapr & Markings",
+    "Reflective Tape & Markings",
     "Load Securement Equipement"
 ]
 
@@ -41,7 +41,7 @@ moffett_list = [
     "Tires & Guards",
     "Operational Controls",
     "Hydrolic/Fluid Leaks",
-    "Cleanliness (Mud/Debris Free)"
+    "Clean of Mud/Debris"
 ]
 
 
@@ -68,12 +68,12 @@ with st.container(key="header_title"):
     st.subheader("Equipement Inspection Check-In")
 
 with st.container(key="top_inputs_section"):
-    st.date_input("Date", value=date.today(), key="inspection_date")
     st.text_input("Driver Signature", key="driver_signature")
     st.text_input("Route/Job #", key="route_number")
     st.text_input("Truck #", key="truck_number")
     st.text_input("Trailer #", key="trailer_number")
     st.text_input("Moffett #", key="moffett_number")
+    st.number_input("Corners Count", min_value=0, step=1, key="corners_count")
 
 with st.container(key="title_section_truck"):
     st.subheader("Truck Inspection")
@@ -93,8 +93,6 @@ with st.container(key="title_section_moffett"):
 with st.container(key="inspection_section_moffett"):
     inspection_rows(moffett_list, "moffett")
 
-with st.container(key="corners_section"):
-    st.number_input("Corners Count", min_value=0, step=1, key="corners_count")
 
 with st.container(key="submit_section"):
     if st.button("Submit"):
