@@ -394,5 +394,9 @@ if st.button("TEST WRITE", key="test_write_btn"):
 
         st.success(f"Wrote {test_value} to A{next_row} ✅")
 
+
+
+st.write("Secret keys visible to app:", list(st.secrets.keys()))
+
     except Exception as e:
         st.error(f"Write failed: {e}")
