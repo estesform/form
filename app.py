@@ -306,7 +306,20 @@ def clear_form():
 # UI
 # =========================
 if st.session_state.inspection_submitted:
-    st.success("Your Inspection Report Has Been Submitted ✅")
+    st.markdown("""
+    <div style="
+        background: rgba(20, 146, 59, 0.85);
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        color: white;
+        font-size: 20px;
+        font-weight: 600;
+        margin-top: 20px;
+    ">
+        ✅ Your Inspection Report Has Been Submitted
+    </div>
+    """, unsafe_allow_html=True)
 
     if st.button("Start New Inspection"):
         clear_form()
