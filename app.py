@@ -68,13 +68,10 @@ SHEET_COLUMNS = [
     "Truck #",
     "Truck Repair Notes",
     "Trailer Unit #",
-    "Number of Winches",
-    "Number of Straps",
     "Trailer Repair Notes",
     "Moffett Unit #",
     "Moffett Repair Notes",
     "Lights & Reflectors (Truck)",
-    "Tires & Wheels (Truck)",
     "Tires & Wheels (Truck)",
     "Brakes (Truck)",
     "Steering & Suspension (Truck)",
@@ -82,6 +79,8 @@ SHEET_COLUMNS = [
     "Horn & Mirrors (Truck)",
     "Safety Equipment (Truck)",
     "Cab & Exterior Cleanliness (Truck)",
+    "Number of Winches",
+    "Number of Straps",
     "Floor Clean (Trailer)",
     "Doors/Hinges/Latches (Trailer)",
     "Trailer Lights/Electrical (Trailer)",
@@ -338,10 +337,8 @@ with st.container(key="title_section_trailer"):
     st.subheader("Trailer Inspection")
 
 with st.container(key="inspection_section_trailer"):
-    st.number_input("Winch Count", min_value=0,
-                    step=1, key="winches_count")
-    st.number_input("Strap Count", min_value=0,
-                    step=1, key="straps_count")
+    st.number_input("Winch Count", min_value=0, step=1, key="winches_count")
+    st.number_input("Strap Count", min_value=0, step=1, key="straps_count")
     inspection_rows(trailer_list, "trailer")
 
 with st.container(key="title_section_moffett"):
