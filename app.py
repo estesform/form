@@ -5,6 +5,9 @@ from google.oauth2.service_account import Credentials
 from datetime import datetime
 import pytz
 
+if "inspection_submitted" not in st.session_state:
+    st.session_state.inspection_submitted = False
+
 # =========================
 # LOAD CSS
 # =========================
@@ -19,8 +22,6 @@ load_css(css_path)
 # =========================
 # INSPECTION LISTS
 # =========================
-
-
 truck_list = [
     "Lights & Reflectors",
     "Tires & Wheels",
@@ -228,7 +229,6 @@ def build_row_data():
     for app_key, sheet_col in APP_TO_SHEET_MAP.items():
         row_data[sheet_col] = st.session_state.get(app_key, "")
 
-    # convert dict to list in exact sheet order
     row_values = [row_data[col] for col in SHEET_COLUMNS]
     return row_values
 
@@ -252,7 +252,6 @@ def validate_form():
             errors.append(f"{label} is required")
         elif isinstance(value, str) and value.strip() == "":
             errors.append(f"{label} is required")
-
 
     sections = [
         ("truck", truck_list),
@@ -300,67 +299,72 @@ def clear_form():
             if notes_key in st.session_state:
                 del st.session_state[notes_key]
 
+    st.session_state.inspection_submitted = False
+
 
 # =========================
 # UI
 # =========================
-with st.container(key="header_title"):
-    st.subheader("Equipement Inspection Check-In")
+if st.session_state.inspection_submitted:
+    st.success("Your Inspection Report Has Been Submitted ✅")
 
-with st.container(key="top_inputs_section"):
-    st.text_input("Driver Signature", key="driver_signature")
-    st.text_input("Route/Job #", key="route_number")
-    st.text_input("Truck #", key="truck_number")
-    st.text_input("Trailer #", key="trailer_number")
-    st.text_input("Moffett #", key="moffett_number")
-    st.number_input("Corners Count", min_value=0, step=1, key="corners_count")
+    if st.button("Start New Inspection"):
+        clear_form()
+        st.rerun()
 
-with st.container(key="title_section_truck"):
-    st.subheader("Truck Inspection")
+else:
+    with st.container(key="header_title"):
+        st.subheader("Equipement Inspection Check-In")
 
-with st.container(key="inspection_section_truck"):
-    inspection_rows(truck_list, "truck")
+    with st.container(key="top_inputs_section"):
+        st.text_input("Driver Signature", key="driver_signature")
+        st.text_input("Route/Job #", key="route_number")
+        st.text_input("Truck #", key="truck_number")
+        st.text_input("Trailer #", key="trailer_number")
+        st.text_input("Moffett #", key="moffett_number")
+        st.number_input("Corners Count", min_value=0, step=1, key="corners_count")
 
-with st.container(key="title_section_trailer"):
-    st.subheader("Trailer Inspection")
+    with st.container(key="title_section_truck"):
+        st.subheader("Truck Inspection")
 
-with st.container(key="inspection_section_trailer"):
-    inspection_rows(trailer_list, "trailer")
+    with st.container(key="inspection_section_truck"):
+        inspection_rows(truck_list, "truck")
 
-with st.container(key="title_section_moffett"):
-    st.subheader("Moffett Inspection")
+    with st.container(key="title_section_trailer"):
+        st.subheader("Trailer Inspection")
 
-with st.container(key="inspection_section_moffett"):
-    inspection_rows(moffett_list, "moffett")
+    with st.container(key="inspection_section_trailer"):
+        inspection_rows(trailer_list, "trailer")
 
-with st.container(key="submit_section"):
-    if st.button("Submit"):
-        errors = validate_form()
+    with st.container(key="title_section_moffett"):
+        st.subheader("Moffett Inspection")
 
-        if errors:
-            st.error("Please fix the following:")
-            for err in errors:
-                st.write(f"- {err}")
-        else:
-            try:
-                row_values = build_row_data()
-                worksheet = get_worksheet()
-                worksheet.append_row(
-                    row_values,
-                    value_input_option="USER_ENTERED"
-                )
+    with st.container(key="inspection_section_moffett"):
+        inspection_rows(moffett_list, "moffett")
 
-                st.session_state["save_success"] = True
-                clear_form()
-                st.rerun()
+    with st.container(key="submit_section"):
+        if st.button("Submit"):
+            errors = validate_form()
 
-            except Exception as e:
-                import traceback
-                st.error("Could not save to Google Sheets.")
-                st.write("Exception type:", type(e).__name__)
-                st.write("Exception repr:", repr(e))
-                st.code(traceback.format_exc())
+            if errors:
+                st.error("Please fix the following:")
+                for err in errors:
+                    st.write(f"- {err}")
+            else:
+                try:
+                    row_values = build_row_data()
+                    worksheet = get_worksheet()
+                    worksheet.append_row(
+                        row_values,
+                        value_input_option="USER_ENTERED"
+                    )
 
-if st.session_state.get("save_success"):
-    st.success("Inspection Submitted and saved to Google Sheets ✅")
-    del st.session_state["save_success"]
+                    st.session_state.inspection_submitted = True
+                    st.rerun()
+
+                except Exception as e:
+                    import traceback
+                    st.error("Could not save to Google Sheets.")
+                    st.write("Exception type:", type(e).__name__)
+                    st.write("Exception repr:", repr(e))
+                    st.code(traceback.format_exc())
