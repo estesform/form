@@ -5,12 +5,11 @@ from google.oauth2.service_account import Credentials
 from datetime import datetime
 import pytz
 
-if "inspection_submitted" not in st.session_state:
-    st.session_state.inspection_submitted = False
-
 # =========================
 # LOAD CSS
 # =========================
+
+
 def load_css(file_path):
     with open(file_path, encoding="utf-8") as f:
         st.html(f"<style>{f.read()}</style>")
@@ -22,6 +21,8 @@ load_css(css_path)
 # =========================
 # INSPECTION LISTS
 # =========================
+
+
 truck_list = [
     "Lights & Reflectors",
     "Tires & Wheels",
@@ -67,6 +68,8 @@ SHEET_COLUMNS = [
     "Truck #",
     "Truck Repair Notes",
     "Trailer Unit #",
+    "Number of Winches",
+    "Number of Straps",
     "Trailer Repair Notes",
     "Moffett Unit #",
     "Moffett Repair Notes",
@@ -128,6 +131,8 @@ APP_TO_SHEET_MAP = {
 # =========================
 # GOOGLE SHEETS CONNECTION
 # =========================
+
+
 @st.cache_resource
 def get_worksheet():
     creds_info = dict(st.secrets["gcp_service_account"])
@@ -216,19 +221,24 @@ def build_row_data():
     row_data["Trailer Unit #"] = str(
         st.session_state.get("trailer_number", "")
     ).strip()
+    row_data["Number of Winches"] = st.session_state.get("winches_count", 0)
+    row_data["Number of Straps"] = st.session_state.get("straps_count", 0)
     row_data["Moffett Unit #"] = str(
         st.session_state.get("moffett_number", "")
     ).strip()
 
     # roll-up repair notes
     row_data["Truck Repair Notes"] = collect_repair_notes("truck", truck_list)
-    row_data["Trailer Repair Notes"] = collect_repair_notes("trailer", trailer_list)
-    row_data["Moffett Repair Notes"] = collect_repair_notes("moffett", moffett_list)
+    row_data["Trailer Repair Notes"] = collect_repair_notes(
+        "trailer", trailer_list)
+    row_data["Moffett Repair Notes"] = collect_repair_notes(
+        "moffett", moffett_list)
 
     # inspection statuses
     for app_key, sheet_col in APP_TO_SHEET_MAP.items():
         row_data[sheet_col] = st.session_state.get(app_key, "")
 
+    # convert dict to list in exact sheet order
     row_values = [row_data[col] for col in SHEET_COLUMNS]
     return row_values
 
@@ -242,7 +252,9 @@ def validate_form():
         ("Truck #", "truck_number"),
         ("Trailer #", "trailer_number"),
         ("Moffett #", "moffett_number"),
-        ("Corners Count", "corners_count")
+        ("Corners Count", "corners_count"),
+        ("Number of Winches", "winches_count"),
+        ("Number of Straps", "straps_count")
     ]
 
     for label, key in required_fields:
@@ -282,7 +294,9 @@ def clear_form():
         "truck_number",
         "trailer_number",
         "moffett_number",
-        "corners_count"
+        "corners_count",
+        "winches_count",
+        "straps_count"
     ]
 
     for key in keys_to_clear:
@@ -299,85 +313,71 @@ def clear_form():
             if notes_key in st.session_state:
                 del st.session_state[notes_key]
 
-    st.session_state.inspection_submitted = False
-
 
 # =========================
 # UI
 # =========================
-if st.session_state.inspection_submitted:
-    st.markdown("""
-    <div style="
-        background: rgba(20, 146, 59, 0.85);
-        padding: 20px;
-        border-radius: 12px;
-        text-align: center;
-        color: white;
-        font-size: 20px;
-        font-weight: 600;
-        margin-top: 50px;
-    ">
-        ✅ Your Inspection Report Has Been Submitted
-    </div>
-    """, unsafe_allow_html=True)
+with st.container(key="header_title"):
+    st.subheader("Equipement Inspection Check-In")
 
-    if st.button("Start New Inspection"):
-        clear_form()
-        st.rerun()
+with st.container(key="top_inputs_section"):
+    st.text_input("Driver Signature", key="driver_signature")
+    st.text_input("Route/Job #", key="route_number")
+    st.text_input("Truck #", key="truck_number")
+    st.text_input("Trailer #", key="trailer_number")
+    st.text_input("Moffett #", key="moffett_number")
+    st.number_input("Corners Count", min_value=0, step=1, key="corners_count")
 
-else:
-    with st.container(key="header_title"):
-        st.subheader("Equipement Inspection Check-In")
+with st.container(key="title_section_truck"):
+    st.subheader("Truck Inspection")
 
-    with st.container(key="top_inputs_section"):
-        st.text_input("Driver Signature", key="driver_signature")
-        st.text_input("Route/Job #", key="route_number")
-        st.text_input("Truck #", key="truck_number")
-        st.text_input("Trailer #", key="trailer_number")
-        st.text_input("Moffett #", key="moffett_number")
-        st.number_input("Corners Count", min_value=0, step=1, key="corners_count")
+with st.container(key="inspection_section_truck"):
+    inspection_rows(truck_list, "truck")
 
-    with st.container(key="title_section_truck"):
-        st.subheader("Truck Inspection")
+with st.container(key="title_section_trailer"):
+    st.subheader("Trailer Inspection")
 
-    with st.container(key="inspection_section_truck"):
-        inspection_rows(truck_list, "truck")
+with st.container(key="inspection_section_trailer"):
+    st.number_input("Winch Count", min_value=0,
+                    step=1, key="winches_count")
+    st.number_input("Strap Count", min_value=0,
+                    step=1, key="straps_count")
+    inspection_rows(trailer_list, "trailer")
 
-    with st.container(key="title_section_trailer"):
-        st.subheader("Trailer Inspection")
+with st.container(key="title_section_moffett"):
+    st.subheader("Moffett Inspection")
 
-    with st.container(key="inspection_section_trailer"):
-        inspection_rows(trailer_list, "trailer")
+with st.container(key="inspection_section_moffett"):
+    inspection_rows(moffett_list, "moffett")
 
-    with st.container(key="title_section_moffett"):
-        st.subheader("Moffett Inspection")
+with st.container(key="submit_section"):
+    if st.button("Submit"):
+        errors = validate_form()
 
-    with st.container(key="inspection_section_moffett"):
-        inspection_rows(moffett_list, "moffett")
+        if errors:
+            st.error("Please fix the following:")
+            for err in errors:
+                st.write(f"- {err}")
+        else:
+            try:
+                row_values = build_row_data()
+                worksheet = get_worksheet()
+                worksheet.append_row(
+                    row_values,
+                    value_input_option="USER_ENTERED"
+                )
 
-    with st.container(key="submit_section"):
-        if st.button("Submit"):
-            errors = validate_form()
+                st.session_state["save_success"] = True
+                clear_form()
+                st.rerun()
 
-            if errors:
-                st.error("Please fix the following:")
-                for err in errors:
-                    st.write(f"- {err}")
-            else:
-                try:
-                    row_values = build_row_data()
-                    worksheet = get_worksheet()
-                    worksheet.append_row(
-                        row_values,
-                        value_input_option="USER_ENTERED"
-                    )
+            except Exception as e:
+                import traceback
+                st.error("Could not save to Google Sheets.")
+                st.write("Exception type:", type(e).__name__)
+                st.write("Exception repr:", repr(e))
+                st.code(traceback.format_exc())
 
-                    st.session_state.inspection_submitted = True
-                    st.rerun()
-
-                except Exception as e:
-                    import traceback
-                    st.error("Could not save to Google Sheets.")
-                    st.write("Exception type:", type(e).__name__)
-                    st.write("Exception repr:", repr(e))
-                    st.code(traceback.format_exc())
+if st.session_state.get("save_success"):
+    st.success("Inspection Submitted and saved to Google Sheets ✅")
+    del st.session_state["save_success"]
