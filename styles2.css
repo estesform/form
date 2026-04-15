@@ -69,6 +69,11 @@
         justify-content: center !important;
     }
 
+    .st-key-inspection_section_trailer div[data-testid="stNumberInputContainer"] input {
+        position: relative;
+        left:50vw;
+    }
+
     /* Radio wrapper */
     div[data-testid="stRadio"] {
         margin-top: 0 !important;
