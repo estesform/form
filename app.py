@@ -19,7 +19,6 @@ load_css(css_path)
 # INSPECTION LISTS
 # =========================
 
-st.write("Secret keys visible to app:", list(st.secrets.keys()))
 
 truck_list = [
     "Lights & Reflectors",
@@ -334,7 +333,7 @@ with st.container(key="inspection_section_moffett"):
     inspection_rows(moffett_list, "moffett")
 
 with st.container(key="submit_section"):
-    if st.button("Submit", key="submit_btn"):
+    if st.button("Submit"):
         errors = validate_form()
 
         if errors:
@@ -343,23 +342,15 @@ with st.container(key="submit_section"):
                 st.write(f"- {err}")
         else:
             try:
-                worksheet = get_worksheet()
-                st.write(
-                    "Submit is writing to:",
-                    worksheet.spreadsheet.title,
-                    "/",
-                    worksheet.title
-                )
-
                 row_values = build_row_data()
-                st.write("Row type:", type(row_values))
-                st.write("Row length:", len(row_values))
-                st.write("First 10 values:", row_values[:10])
-
+                worksheet = get_worksheet()
                 worksheet.append_row(
-                    row_values,
-                    value_input_option="USER_ENTERED"
-                )
+                    row_values, value_input_option="USER_ENTERED")
+                st.success("Inspection Submitted and saved to Google Sheets ✅")
+                clear_form()
+                st.rerun()
+            except Exception as e:
+                st.error(f"Could not save to Google Sheets: {e}")
 
                 st.success("Inspection Submitted and saved to Google Sheets ✅")
 
@@ -369,40 +360,4 @@ with st.container(key="submit_section"):
                 st.write("Exception type:", type(e).__name__)
                 st.write("Exception repr:", repr(e))
                 st.code(traceback.format_exc())
-
-if st.button("Test Sheet Tabs", key="test_tabs_btn"):
-    try:
-        worksheet = get_worksheet()
-        spreadsheet = worksheet.spreadsheet
-        tab_names = [ws.title for ws in spreadsheet.worksheets()]
-
-        st.write("Spreadsheet title:", spreadsheet.title)
-        st.write("Spreadsheet ID:", spreadsheet.id)
-        st.write("Worksheet title:", worksheet.title)
-        st.write("All tabs:", tab_names)
-
-    except Exception as e:
-        st.error(f"Tab test failed: {e}")
-
-
-if st.button("TEST WRITE", key="test_write_btn"):
-    try:
-        worksheet = get_worksheet()
-
-        st.write("Spreadsheet title:", worksheet.spreadsheet.title)
-        st.write("Worksheet title:", worksheet.title)
-
-        next_row = len(worksheet.col_values(1)) + 1
-        test_value = f"TEST_{next_row}"
-
-        worksheet.update_acell(f"A{next_row}", test_value)
-
-        read_back = worksheet.acell(f"A{next_row}").value
-        st.write("Writing to row:", next_row)
-        st.write("Read back:", read_back)
-
-        st.success(f"Wrote {test_value} to A{next_row} ✅")
-
-    except Exception as e:
-        st.error(f"Write failed: {e}")
 
