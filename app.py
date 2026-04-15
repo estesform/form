@@ -345,14 +345,13 @@ with st.container(key="submit_section"):
                 row_values = build_row_data()
                 worksheet = get_worksheet()
                 worksheet.append_row(
-                    row_values, value_input_option="USER_ENTERED")
-                st.success("Inspection Submitted and saved to Google Sheets ✅")
+                    row_values,
+                    value_input_option="USER_ENTERED"
+                )
+
+                st.session_state["save_success"] = True
                 clear_form()
                 st.rerun()
-            except Exception as e:
-                st.error(f"Could not save to Google Sheets: {e}")
-
-                st.success("Inspection Submitted and saved to Google Sheets ✅")
 
             except Exception as e:
                 import traceback
@@ -361,3 +360,6 @@ with st.container(key="submit_section"):
                 st.write("Exception repr:", repr(e))
                 st.code(traceback.format_exc())
 
+if st.session_state.get("save_success"):
+    st.success("Inspection Submitted and saved to Google Sheets ✅")
+    del st.session_state["save_success"]
