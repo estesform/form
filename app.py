@@ -315,7 +315,7 @@ if st.session_state.inspection_submitted:
         color: white;
         font-size: 20px;
         font-weight: 600;
-        margin-top: 20px;
+        margin-top: 50px;
     ">
         ✅ Your Inspection Report Has Been Submitted
     </div>
