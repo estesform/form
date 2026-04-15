@@ -3,6 +3,7 @@ import pathlib
 import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime
+import pytz
 
 # =========================
 # LOAD CSS
@@ -192,7 +193,8 @@ def collect_repair_notes(prefix, items):
 
 
 def build_row_data():
-    now = datetime.now()
+    tz = pytz.timezone("America/Chicago")
+    now = datetime.now(tz)
 
     row_data = {col: "" for col in SHEET_COLUMNS}
 
