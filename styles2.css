@@ -71,8 +71,28 @@
 
     .st-key-inspection_section_trailer div[data-testid="stNumberInputContainer"] input {
         position: relative;
-        left:50vw;
+        left: 13vw;
+        font-size: x-large;
     }
+
+    .st-key-winches_count p,
+    .st-key-straps_count p {
+        position: relative;
+        top:4vw;
+    }
+
+    .st-key-inspection_section_trailer div[data-testid="stNumberInputContainer"]{
+        width: 60vw;
+    }
+
+    .st-key-top_inputs_section div[data-testid="stNumberInputContainer"] input{
+        position: relative;
+        left:13vw;
+    }
+    .st-key-top_inputs_section div[data-testid="stNumberInputContainer"]{
+        width:60vw
+    }
+
 
     /* Radio wrapper */
     div[data-testid="stRadio"] {
