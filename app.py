@@ -250,8 +250,7 @@ def validate_form():
             errors.append(f"{label} is required")
         elif isinstance(value, str) and value.strip() == "":
             errors.append(f"{label} is required")
-        elif key == "corners_count" and value == 0:
-            errors.append("Corners Count must be greater than 0")
+
 
     sections = [
         ("truck", truck_list),
