@@ -219,11 +219,11 @@ def inject_admin_scroll_lock():
             top: 0 !important;
             left: 0 !important;
             right: 0 !important;
-            bottom: 84px !important;
+            bottom: 0 !important;
             overflow-y: auto !important;
             background: white !important;
-            z-index: 9998 !important;
-            padding: 1rem !important;
+            z-index: 99999 !important;
+            padding: 1rem 1rem 2rem 1rem !important;
             margin: 0 !important;
         }
 
