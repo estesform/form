@@ -4,6 +4,9 @@
         background-size: contain !important;       /* fills screen */
         background-position: top !important;  /* keeps it centered */
         background-repeat: no-repeat !important;
+
+        /* extra room so fixed bottom button doesn't cover content */
+        padding-bottom: 120px !important;
     }
 
 
@@ -57,6 +60,7 @@
     div.stVerticalBlock.st-key-inspection_section_moffett {
         gap: 0rem !important;
     }
+
     .st-key-title_section_moffett div[data-testid="stHeadingWithActionElements"]{
         justify-content: center !important;
     }
@@ -89,6 +93,7 @@
         position: relative;
         left:13vw;
     }
+
     .st-key-top_inputs_section div[data-testid="stNumberInputContainer"]{
         width:60vw
     }
@@ -173,11 +178,50 @@
     div[data-testid="stRadio"] label[data-baseweb="radio"]:nth-of-type(2):has(input:checked)::before {
         color: white !important;
     }
+
     .stAppToolbar{
         display: none;
     }
+
     .st-key-submit_section div[data-testid="stButton"] {
         margin-top: 5vw;
         width: 90vw;
+    }
+
+    /* =========================
+       MOBILE ADMIN BUTTON
+       ========================= */
+
+    .mobile-admin-wrap {
+        display: block;
+        position: fixed;
+        bottom: 16px;
+        left: 0;
+        width: 100%;
+        z-index: 9999;
+        pointer-events: none;
+    }
+
+    .mobile-admin-wrap > div {
+        display: flex;
+        justify-content: center;
+        pointer-events: none;
+    }
+
+    .mobile-admin-wrap button {
+        pointer-events: auto;
+        width: calc(100vw - 32px);
+        max-width: 420px;
+        min-height: 52px;
+        border-radius: 16px;
+        font-size: 18px;
+        font-weight: 600;
+    }
+}
+
+/* hide the fixed admin button on desktop */
+@media (min-width: 769px) {
+    .mobile-admin-wrap {
+        display: none !important;
     }
 }
