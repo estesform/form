@@ -197,6 +197,45 @@ def admin_password_dialog():
                 st.rerun()
 
 # =========================
+# ADMIN SCROLL LOCK
+# =========================
+def inject_admin_scroll_lock():
+    st.markdown(
+        """
+        <style>
+        html, body, [data-testid="stAppViewContainer"], [data-testid="stMain"] {
+            overflow: hidden !important;
+            height: 100vh !important;
+        }
+
+        [data-testid="stMainBlockContainer"] {
+            height: 100vh !important;
+            overflow: hidden !important;
+            padding-bottom: 110px !important;
+        }
+
+        .st-key-admin_panel_section {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 84px !important;
+            overflow-y: auto !important;
+            background: white !important;
+            z-index: 9998 !important;
+            padding: 1rem !important;
+            margin: 0 !important;
+        }
+
+        .st-key-admin_panel_section hr {
+            display: none !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+# =========================
 # FORM BUILDERS
 # =========================
 def inspection_rows(items, prefix):
@@ -276,7 +315,6 @@ def build_row_data():
     for app_key, sheet_col in APP_TO_SHEET_MAP.items():
         row_data[sheet_col] = st.session_state.get(app_key, "")
 
-    # convert dict to list in exact sheet order
     row_values = [row_data[col] for col in SHEET_COLUMNS]
     return row_values
 
@@ -422,11 +460,19 @@ if st.session_state.get("save_success"):
     del st.session_state["save_success"]
 
 # =========================
+# MOBILE BOTTOM ADMIN BUTTON
+# =========================
+with st.container(key="mobile_admin_wrap"):
+    if st.button("Open Admin", key="mobile_admin_open", use_container_width=True):
+        admin_password_dialog()
+
+# =========================
 # ADMIN PANEL
 # =========================
 if st.session_state.get("show_admin_panel") and st.session_state.get("admin_authenticated"):
+    inject_admin_scroll_lock()
+
     with st.container(key="admin_panel_section"):
-        st.divider()
         st.subheader("Admin Panel")
 
         col1, col2 = st.columns(2)
@@ -446,15 +492,8 @@ if st.session_state.get("show_admin_panel") and st.session_state.get("admin_auth
 
         st.button("Button 5", key="admin_btn_5", use_container_width=True)
 
-        if st.button("Close Admin Panel", key="close_admin_panel"):
+        if st.button("Close Admin Panel", key="close_admin_panel", use_container_width=True):
             st.session_state["show_admin_panel"] = False
             st.session_state["admin_authenticated"] = False
             st.session_state["admin_password_error"] = ""
             st.rerun()
-
-# =========================
-# MOBILE BOTTOM ADMIN BUTTON
-# =========================
-with st.container(key="mobile_admin_wrap"):
-    if st.button("Open Admin", key="mobile_admin_open", use_container_width=True):
-        admin_password_dialog()
