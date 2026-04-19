@@ -8,8 +8,6 @@ import pytz
 # =========================
 # LOAD CSS
 # =========================
-
-
 def load_css(file_path):
     with open(file_path, encoding="utf-8") as f:
         st.html(f"<style>{f.read()}</style>")
@@ -19,10 +17,26 @@ css_path = pathlib.Path("styles2.css")
 load_css(css_path)
 
 # =========================
+# ADMIN / MOBILE BUTTON STATE
+# =========================
+if "admin_authenticated" not in st.session_state:
+    st.session_state["admin_authenticated"] = False
+
+if "show_admin_panel" not in st.session_state:
+    st.session_state["show_admin_panel"] = False
+
+if "admin_password_input" not in st.session_state:
+    st.session_state["admin_password_input"] = ""
+
+if "admin_password_error" not in st.session_state:
+    st.session_state["admin_password_error"] = ""
+
+# change this to your real password
+ADMIN_PASSWORD = "1234"
+
+# =========================
 # INSPECTION LISTS
 # =========================
-
-
 truck_list = [
     "Lights & Reflectors",
     "Tires & Wheels",
@@ -130,8 +144,6 @@ APP_TO_SHEET_MAP = {
 # =========================
 # GOOGLE SHEETS CONNECTION
 # =========================
-
-
 @st.cache_resource
 def get_worksheet():
     creds_info = dict(st.secrets["gcp_service_account"])
@@ -153,6 +165,40 @@ def get_worksheet():
     worksheet = spreadsheet.worksheet(worksheet_name)
     return worksheet
 
+# =========================
+# ADMIN DIALOG
+# =========================
+@st.dialog("Admin Access")
+def admin_password_dialog():
+    st.write("Enter password to continue.")
+
+    st.text_input(
+        "Password",
+        type="password",
+        key="admin_password_input"
+    )
+
+    if st.session_state.get("admin_password_error"):
+        st.error(st.session_state["admin_password_error"])
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button("Cancel", key="admin_cancel_btn"):
+            st.session_state["admin_password_input"] = ""
+            st.session_state["admin_password_error"] = ""
+
+    with col2:
+        if st.button("Enter", key="admin_enter_btn"):
+            if st.session_state["admin_password_input"] == ADMIN_PASSWORD:
+                st.session_state["admin_authenticated"] = True
+                st.session_state["show_admin_panel"] = True
+                st.session_state["admin_password_error"] = ""
+                st.session_state["admin_password_input"] = ""
+                st.rerun()
+            else:
+                st.session_state["admin_password_error"] = "Incorrect password."
+                st.rerun()
 
 # =========================
 # FORM BUILDERS
@@ -174,7 +220,6 @@ def inspection_rows(items, prefix):
                 "Repairs:",
                 key=f"{key}_notes"
             )
-
 
 # =========================
 # HELPERS
@@ -228,10 +273,8 @@ def build_row_data():
 
     # roll-up repair notes
     row_data["Truck Repair Notes"] = collect_repair_notes("truck", truck_list)
-    row_data["Trailer Repair Notes"] = collect_repair_notes(
-        "trailer", trailer_list)
-    row_data["Moffett Repair Notes"] = collect_repair_notes(
-        "moffett", moffett_list)
+    row_data["Trailer Repair Notes"] = collect_repair_notes("trailer", trailer_list)
+    row_data["Moffett Repair Notes"] = collect_repair_notes("moffett", moffett_list)
 
     # inspection statuses
     for app_key, sheet_col in APP_TO_SHEET_MAP.items():
@@ -302,7 +345,11 @@ def clear_form():
         if key in st.session_state:
             del st.session_state[key]
 
-    for prefix, items in [("truck", truck_list), ("trailer", trailer_list), ("moffett", moffett_list)]:
+    for prefix, items in [
+        ("truck", truck_list),
+        ("trailer", trailer_list),
+        ("moffett", moffett_list)
+    ]:
         for i, _ in enumerate(items):
             key = f"{prefix}_item_{i}"
             notes_key = f"{key}_notes"
@@ -311,7 +358,6 @@ def clear_form():
                 del st.session_state[key]
             if notes_key in st.session_state:
                 del st.session_state[notes_key]
-
 
 # =========================
 # UI
@@ -378,3 +424,40 @@ with st.container(key="submit_section"):
 if st.session_state.get("save_success"):
     st.success("Inspection Submitted and saved to Google Sheets ✅")
     del st.session_state["save_success"]
+
+# =========================
+# ADMIN PANEL
+# =========================
+if st.session_state.get("show_admin_panel") and st.session_state.get("admin_authenticated"):
+    with st.container(key="admin_panel_section"):
+        st.divider()
+        st.subheader("Admin Panel")
+
+        col1, col2 = st.columns(2)
+        col3, col4 = st.columns(2)
+
+        with col1:
+            st.button("Button 1", key="admin_btn_1", use_container_width=True)
+
+        with col2:
+            st.button("Button 2", key="admin_btn_2", use_container_width=True)
+
+        with col3:
+            st.button("Button 3", key="admin_btn_3", use_container_width=True)
+
+        with col4:
+            st.button("Button 4", key="admin_btn_4", use_container_width=True)
+
+        st.button("Button 5", key="admin_btn_5", use_container_width=True)
+
+        if st.button("Close Admin Panel", key="close_admin_panel"):
+            st.session_state["show_admin_panel"] = False
+            st.session_state["admin_authenticated"] = False
+            st.rerun()
+
+# =========================
+# MOBILE BOTTOM ADMIN BUTTON
+# =========================
+with st.container(key="mobile_admin_wrap"):
+    if st.button("Open Admin", key="mobile_admin_open", use_container_width=True):
+        admin_password_dialog()
