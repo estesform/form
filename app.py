@@ -25,9 +25,6 @@ if "admin_authenticated" not in st.session_state:
 if "show_admin_panel" not in st.session_state:
     st.session_state["show_admin_panel"] = False
 
-if "admin_password_input" not in st.session_state:
-    st.session_state["admin_password_input"] = ""
-
 if "admin_password_error" not in st.session_state:
     st.session_state["admin_password_error"] = ""
 
@@ -172,7 +169,7 @@ def get_worksheet():
 def admin_password_dialog():
     st.write("Enter password to continue.")
 
-    st.text_input(
+    password_value = st.text_input(
         "Password",
         type="password",
         key="admin_password_input"
@@ -185,16 +182,15 @@ def admin_password_dialog():
 
     with col1:
         if st.button("Cancel", key="admin_cancel_btn"):
-            st.session_state["admin_password_input"] = ""
             st.session_state["admin_password_error"] = ""
+            st.rerun()
 
     with col2:
         if st.button("Enter", key="admin_enter_btn"):
-            if st.session_state["admin_password_input"] == ADMIN_PASSWORD:
+            if password_value == ADMIN_PASSWORD:
                 st.session_state["admin_authenticated"] = True
                 st.session_state["show_admin_panel"] = True
                 st.session_state["admin_password_error"] = ""
-                st.session_state["admin_password_input"] = ""
                 st.rerun()
             else:
                 st.session_state["admin_password_error"] = "Incorrect password."
@@ -453,6 +449,7 @@ if st.session_state.get("show_admin_panel") and st.session_state.get("admin_auth
         if st.button("Close Admin Panel", key="close_admin_panel"):
             st.session_state["show_admin_panel"] = False
             st.session_state["admin_authenticated"] = False
+            st.session_state["admin_password_error"] = ""
             st.rerun()
 
 # =========================
