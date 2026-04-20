@@ -6,6 +6,7 @@ from datetime import datetime
 import pytz
 import csv
 import io
+import pandas as pd
 
 # =========================
 # LOAD CSS
@@ -38,6 +39,9 @@ if "report_headers" not in st.session_state:
 
 if "report_results" not in st.session_state:
     st.session_state["report_results"] = []
+
+if "report_csv_data" not in st.session_state:
+    st.session_state["report_csv_data"] = ""
 
 # change this to your real password
 ADMIN_PASSWORD = "1234"
@@ -216,16 +220,8 @@ def get_inspection_report_rows(start_date, finish_date):
     return report_headers, report_rows
 
 
-def build_report_csv(report_headers, report_rows):
-    output = io.StringIO()
-    writer = csv.writer(output)
-
-    writer.writerow(report_headers)
-
-    for row in report_rows:
-        writer.writerow(row)
-
-    return output.getvalue()
+def build_report_csv_from_dataframe(df):
+    return df.to_csv(index=False)
 
 # =========================
 # ADMIN DIALOG
@@ -605,6 +601,7 @@ if st.session_state.get("show_admin_panel") and st.session_state.get("admin_auth
             st.session_state["show_inspection_report"] = False
             st.session_state["report_headers"] = []
             st.session_state["report_results"] = []
+            st.session_state["report_csv_data"] = ""
             st.rerun()
 
 # =========================
@@ -622,11 +619,21 @@ if st.session_state.get("show_inspection_report"):
         if st.button("Generate Report", key="generate_report_btn", use_container_width=True):
             if start_date > finish_date:
                 st.error("Start date cannot be after finish date.")
+                st.session_state["report_headers"] = []
+                st.session_state["report_results"] = []
+                st.session_state["report_csv_data"] = ""
             else:
                 try:
                     headers, rows = get_inspection_report_rows(start_date, finish_date)
                     st.session_state["report_headers"] = headers
                     st.session_state["report_results"] = rows
+
+                    if rows:
+                        df = pd.DataFrame(rows, columns=headers)
+                        st.session_state["report_csv_data"] = build_report_csv_from_dataframe(df)
+                    else:
+                        st.session_state["report_csv_data"] = ""
+
                     st.rerun()
                 except Exception as e:
                     import traceback
@@ -637,27 +644,22 @@ if st.session_state.get("show_inspection_report"):
 
         report_headers = st.session_state.get("report_headers", [])
         report_results = st.session_state.get("report_results", [])
+        report_csv_data = st.session_state.get("report_csv_data", "")
 
         if report_results:
-            report_data = []
-            for row in report_results:
-                row_dict = {}
-                for i, header in enumerate(report_headers):
-                    row_dict[header] = row[i] if i < len(row) else ""
-                report_data.append(row_dict)
+            df = pd.DataFrame(report_results, columns=report_headers)
+            st.dataframe(df, use_container_width=True)
 
-            st.dataframe(report_data, use_container_width=True)
-
-            csv_data = build_report_csv(report_headers, report_results)
             file_name = f"inspection_report_{start_date}_{finish_date}.csv"
 
             st.download_button(
                 label="Download CSV",
-                data=csv_data,
+                data=report_csv_data,
                 file_name=file_name,
                 mime="text/csv",
                 key="download_report_csv_btn",
-                use_container_width=True
+                use_container_width=True,
+                on_click="ignore"
             )
 
         elif st.session_state.get("report_results") == [] and st.session_state.get("report_headers"):
@@ -667,4 +669,6 @@ if st.session_state.get("show_inspection_report"):
             st.session_state["show_inspection_report"] = False
             st.session_state["report_headers"] = []
             st.session_state["report_results"] = []
+            st.session_state["report_csv_data"] = ""
             st.rerun()
+            
