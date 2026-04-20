@@ -4,6 +4,8 @@ import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime
 import pytz
+import csv
+import io
 
 # =========================
 # LOAD CSS
@@ -212,6 +214,18 @@ def get_inspection_report_rows(start_date, finish_date):
             report_rows.append(filtered_row)
 
     return report_headers, report_rows
+
+
+def build_report_csv(report_headers, report_rows):
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    writer.writerow(report_headers)
+
+    for row in report_rows:
+        writer.writerow(row)
+
+    return output.getvalue()
 
 # =========================
 # ADMIN DIALOG
@@ -633,6 +647,18 @@ if st.session_state.get("show_inspection_report"):
                 report_data.append(row_dict)
 
             st.dataframe(report_data, use_container_width=True)
+
+            csv_data = build_report_csv(report_headers, report_results)
+            file_name = f"inspection_report_{start_date}_{finish_date}.csv"
+
+            st.download_button(
+                label="Download CSV",
+                data=csv_data,
+                file_name=file_name,
+                mime="text/csv",
+                key="download_report_csv_btn",
+                use_container_width=True
+            )
 
         elif st.session_state.get("report_results") == [] and st.session_state.get("report_headers"):
             st.info("No rows found in that date range.")
