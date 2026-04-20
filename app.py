@@ -224,80 +224,78 @@ def get_inspection_report_rows(start_date, finish_date, mode="inspection"):
 
         return report_headers, report_rows
 
-        elif mode == "repairs":
-            report_headers = [
-                "Driver Signature",
-                "Stamp",
-                "Category",
-                "Unit #",
-                "Repair Notes"
-            ]
-        
-            truck_rows = []
-            trailer_rows = []
-            moffett_rows = []
-        
-            for row in all_rows[1:]:
-                if len(row) < 12:
-                    continue
-        
-                raw_date = row[2].strip()
-        
-                try:
-                    row_date = datetime.strptime(raw_date, "%Y-%m-%d").date()
-                except Exception:
-                    continue
-        
-                if not (start_date <= row_date <= finish_date):
-                    continue
-        
-                driver_signature = row[0].strip() if len(row) > 0 else ""
-                stamp = row[1].strip() if len(row) > 1 else ""
-        
-                truck_unit = row[6].strip() if len(row) > 6 else ""
-                truck_notes = row[7].strip() if len(row) > 7 else ""
-        
-                trailer_unit = row[8].strip() if len(row) > 8 else ""
-                trailer_notes = row[9].strip() if len(row) > 9 else ""
-        
-                moffett_unit = row[10].strip() if len(row) > 10 else ""
-                moffett_notes = row[11].strip() if len(row) > 11 else ""
-        
-                if truck_notes:
-                    truck_rows.append([
-                        driver_signature,
-                        stamp,
-                        "Truck",
-                        truck_unit,
-                        truck_notes
-                    ])
-        
-                if trailer_notes:
-                    trailer_rows.append([
-                        driver_signature,
-                        stamp,
-                        "Trailer",
-                        trailer_unit,
-                        trailer_notes
-                    ])
-        
-                if moffett_notes:
-                    moffett_rows.append([
-                        driver_signature,
-                        stamp,
-                        "Moffett",
-                        moffett_unit,
-                        moffett_notes
-                    ])
-        
-            # 🔥 Clean grouped output (no fake rows)
-            report_rows = truck_rows + trailer_rows + moffett_rows
-        
-            return report_headers, report_rows
-        
-        
-        def build_report_csv_from_dataframe(df):
-            return df.to_csv(index=False)
+    elif mode == "repairs":
+        report_headers = [
+            "Driver Signature",
+            "Stamp",
+            "Category",
+            "Unit #",
+            "Repair Notes"
+        ]
+
+        truck_rows = []
+        trailer_rows = []
+        moffett_rows = []
+
+        for row in all_rows[1:]:
+            if len(row) < 12:
+                continue
+
+            raw_date = row[2].strip()
+
+            try:
+                row_date = datetime.strptime(raw_date, "%Y-%m-%d").date()
+            except Exception:
+                continue
+
+            if not (start_date <= row_date <= finish_date):
+                continue
+
+            driver_signature = row[0].strip() if len(row) > 0 else ""
+            stamp = row[1].strip() if len(row) > 1 else ""
+
+            truck_unit = row[6].strip() if len(row) > 6 else ""
+            truck_notes = row[7].strip() if len(row) > 7 else ""
+
+            trailer_unit = row[8].strip() if len(row) > 8 else ""
+            trailer_notes = row[9].strip() if len(row) > 9 else ""
+
+            moffett_unit = row[10].strip() if len(row) > 10 else ""
+            moffett_notes = row[11].strip() if len(row) > 11 else ""
+
+            if truck_notes:
+                truck_rows.append([
+                    driver_signature,
+                    stamp,
+                    "Truck",
+                    truck_unit,
+                    truck_notes
+                ])
+
+            if trailer_notes:
+                trailer_rows.append([
+                    driver_signature,
+                    stamp,
+                    "Trailer",
+                    trailer_unit,
+                    trailer_notes
+                ])
+
+            if moffett_notes:
+                moffett_rows.append([
+                    driver_signature,
+                    stamp,
+                    "Moffett",
+                    moffett_unit,
+                    moffett_notes
+                ])
+
+        report_rows = truck_rows + trailer_rows + moffett_rows
+        return report_headers, report_rows
+
+
+def build_report_csv_from_dataframe(df):
+    return df.to_csv(index=False)
 
 # =========================
 # ADMIN DIALOG
