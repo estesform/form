@@ -43,6 +43,9 @@ if "report_results" not in st.session_state:
 if "report_csv_data" not in st.session_state:
     st.session_state["report_csv_data"] = ""
 
+if "report_mode" not in st.session_state:
+    st.session_state["report_mode"] = "inspection"
+
 # change this to your real password
 ADMIN_PASSWORD = "1234"
 
@@ -180,7 +183,7 @@ def get_worksheet():
 # =========================
 # REPORT HELPERS
 # =========================
-def get_inspection_report_rows(start_date, finish_date):
+def get_inspection_report_rows(start_date, finish_date, mode="inspection"):
     worksheet = get_worksheet()
     all_rows = worksheet.get_all_values()
 
@@ -213,9 +216,19 @@ def get_inspection_report_rows(start_date, finish_date):
         except Exception:
             continue
 
-        if start_date <= row_date <= finish_date:
-            filtered_row = [row[i] if i < len(row) else "" for i in wanted_indexes]
-            report_rows.append(filtered_row)
+        if not (start_date <= row_date <= finish_date):
+            continue
+
+        if mode == "repairs":
+            col_h = row[7].strip() if len(row) > 7 else ""
+            col_j = row[9].strip() if len(row) > 9 else ""
+            col_l = row[11].strip() if len(row) > 11 else ""
+
+            if not (col_h or col_j or col_l):
+                continue
+
+        filtered_row = [row[i] if i < len(row) else "" for i in wanted_indexes]
+        report_rows.append(filtered_row)
 
     return report_headers, report_rows
 
@@ -580,11 +593,15 @@ if st.session_state.get("show_admin_panel") and st.session_state.get("admin_auth
 
         with col1:
             if st.button("Inspection Report", key="admin_btn_1", use_container_width=True):
+                st.session_state["report_mode"] = "inspection"
                 st.session_state["show_inspection_report"] = True
                 st.rerun()
 
         with col2:
-            st.button("Button 2", key="admin_btn_2", use_container_width=True)
+            if st.button("Repairs Report", key="admin_btn_2", use_container_width=True):
+                st.session_state["report_mode"] = "repairs"
+                st.session_state["show_inspection_report"] = True
+                st.rerun()
 
         with col3:
             st.button("Button 3", key="admin_btn_3", use_container_width=True)
@@ -602,6 +619,7 @@ if st.session_state.get("show_admin_panel") and st.session_state.get("admin_auth
             st.session_state["report_headers"] = []
             st.session_state["report_results"] = []
             st.session_state["report_csv_data"] = ""
+            st.session_state["report_mode"] = "inspection"
             st.rerun()
 
 # =========================
@@ -611,7 +629,9 @@ if st.session_state.get("show_inspection_report"):
     inject_report_scroll_lock()
 
     with st.container(key="inspection_report_section"):
-        st.subheader("Inspection Report")
+        mode = st.session_state.get("report_mode", "inspection")
+        title = "Inspection Report" if mode == "inspection" else "Repairs Report"
+        st.subheader(title)
 
         start_date = st.date_input("Start", key="report_start_date")
         finish_date = st.date_input("Finish", key="report_finish_date")
@@ -624,7 +644,7 @@ if st.session_state.get("show_inspection_report"):
                 st.session_state["report_csv_data"] = ""
             else:
                 try:
-                    headers, rows = get_inspection_report_rows(start_date, finish_date)
+                    headers, rows = get_inspection_report_rows(start_date, finish_date, mode)
                     st.session_state["report_headers"] = headers
                     st.session_state["report_results"] = rows
 
@@ -650,7 +670,7 @@ if st.session_state.get("show_inspection_report"):
             df = pd.DataFrame(report_results, columns=report_headers)
             st.dataframe(df, use_container_width=True)
 
-            file_name = f"inspection_report_{start_date}_{finish_date}.csv"
+            file_name = f"{mode}_report_{start_date}_{finish_date}.csv"
 
             st.download_button(
                 label="Download CSV",
@@ -670,5 +690,5 @@ if st.session_state.get("show_inspection_report"):
             st.session_state["report_headers"] = []
             st.session_state["report_results"] = []
             st.session_state["report_csv_data"] = ""
+            st.session_state["report_mode"] = "inspection"
             st.rerun()
-            
