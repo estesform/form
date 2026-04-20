@@ -28,6 +28,15 @@ if "show_admin_panel" not in st.session_state:
 if "admin_password_error" not in st.session_state:
     st.session_state["admin_password_error"] = ""
 
+if "show_inspection_report" not in st.session_state:
+    st.session_state["show_inspection_report"] = False
+
+if "report_headers" not in st.session_state:
+    st.session_state["report_headers"] = []
+
+if "report_results" not in st.session_state:
+    st.session_state["report_results"] = []
+
 # change this to your real password
 ADMIN_PASSWORD = "1234"
 
@@ -163,6 +172,48 @@ def get_worksheet():
     return worksheet
 
 # =========================
+# REPORT HELPERS
+# =========================
+def get_inspection_report_rows(start_date, finish_date):
+    worksheet = get_worksheet()
+    all_rows = worksheet.get_all_values()
+
+    report_rows = []
+
+    # A, B, E, F, G, H, I, J, K, L
+    wanted_indexes = [0, 1, 4, 5, 6, 7, 8, 9, 10, 11]
+
+    report_headers = [
+        "Driver Signature",
+        "Stamp",
+        "Route/Job #",
+        "Corner Boards",
+        "Truck #",
+        "Truck Repair Notes",
+        "Trailer Unit #",
+        "Trailer Repair Notes",
+        "Moffett Unit #",
+        "Moffett Repair Notes"
+    ]
+
+    for row in all_rows[1:]:
+        if len(row) < 12:
+            continue
+
+        raw_date = row[2].strip()  # column C = Date
+
+        try:
+            row_date = datetime.strptime(raw_date, "%Y-%m-%d").date()
+        except Exception:
+            continue
+
+        if start_date <= row_date <= finish_date:
+            filtered_row = [row[i] if i < len(row) else "" for i in wanted_indexes]
+            report_rows.append(filtered_row)
+
+    return report_headers, report_rows
+
+# =========================
 # ADMIN DIALOG
 # =========================
 @st.dialog("Admin Access")
@@ -211,7 +262,7 @@ def inject_admin_scroll_lock():
         [data-testid="stMainBlockContainer"] {
             height: 100vh !important;
             overflow: hidden !important;
-            padding-bottom: 110px !important;
+            padding-bottom: 0 !important;
         }
 
         .st-key-admin_panel_section {
@@ -228,6 +279,45 @@ def inject_admin_scroll_lock():
         }
 
         .st-key-admin_panel_section hr {
+            display: none !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+# =========================
+# REPORT SCROLL LOCK
+# =========================
+def inject_report_scroll_lock():
+    st.markdown(
+        """
+        <style>
+        html, body, [data-testid="stAppViewContainer"], [data-testid="stMain"] {
+            overflow: hidden !important;
+            height: 100vh !important;
+        }
+
+        [data-testid="stMainBlockContainer"] {
+            height: 100vh !important;
+            overflow: hidden !important;
+            padding-bottom: 0 !important;
+        }
+
+        .st-key-inspection_report_section {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            overflow-y: auto !important;
+            background: white !important;
+            z-index: 100000 !important;
+            padding: 1rem 1rem 2rem 1rem !important;
+            margin: 0 !important;
+        }
+
+        .st-key-inspection_report_section hr {
             display: none !important;
         }
         </style>
@@ -479,7 +569,9 @@ if st.session_state.get("show_admin_panel") and st.session_state.get("admin_auth
         col3, col4 = st.columns(2)
 
         with col1:
-            st.button("Button 1", key="admin_btn_1", use_container_width=True)
+            if st.button("Inspection Report", key="admin_btn_1", use_container_width=True):
+                st.session_state["show_inspection_report"] = True
+                st.rerun()
 
         with col2:
             st.button("Button 2", key="admin_btn_2", use_container_width=True)
@@ -496,4 +588,57 @@ if st.session_state.get("show_admin_panel") and st.session_state.get("admin_auth
             st.session_state["show_admin_panel"] = False
             st.session_state["admin_authenticated"] = False
             st.session_state["admin_password_error"] = ""
+            st.session_state["show_inspection_report"] = False
+            st.session_state["report_headers"] = []
+            st.session_state["report_results"] = []
+            st.rerun()
+
+# =========================
+# INSPECTION REPORT SCREEN
+# =========================
+if st.session_state.get("show_inspection_report"):
+    inject_report_scroll_lock()
+
+    with st.container(key="inspection_report_section"):
+        st.subheader("Inspection Report")
+
+        start_date = st.date_input("Start", key="report_start_date")
+        finish_date = st.date_input("Finish", key="report_finish_date")
+
+        if st.button("Generate Report", key="generate_report_btn", use_container_width=True):
+            if start_date > finish_date:
+                st.error("Start date cannot be after finish date.")
+            else:
+                try:
+                    headers, rows = get_inspection_report_rows(start_date, finish_date)
+                    st.session_state["report_headers"] = headers
+                    st.session_state["report_results"] = rows
+                    st.rerun()
+                except Exception as e:
+                    import traceback
+                    st.error("Could not generate report.")
+                    st.write("Exception type:", type(e).__name__)
+                    st.write("Exception repr:", repr(e))
+                    st.code(traceback.format_exc())
+
+        report_headers = st.session_state.get("report_headers", [])
+        report_results = st.session_state.get("report_results", [])
+
+        if report_results:
+            report_data = []
+            for row in report_results:
+                row_dict = {}
+                for i, header in enumerate(report_headers):
+                    row_dict[header] = row[i] if i < len(row) else ""
+                report_data.append(row_dict)
+
+            st.dataframe(report_data, use_container_width=True)
+
+        elif st.session_state.get("report_results") == [] and st.session_state.get("report_headers"):
+            st.info("No rows found in that date range.")
+
+        if st.button("Back to Admin Panel", key="back_to_admin_panel_btn", use_container_width=True):
+            st.session_state["show_inspection_report"] = False
+            st.session_state["report_headers"] = []
+            st.session_state["report_results"] = []
             st.rerun()
