@@ -1,34 +1,4 @@
-import streamlit as st
-import streamlit as st
-
-MAINTENANCE_MODE = True
-
-if MAINTENANCE_MODE:
-    st.set_page_config(page_title="Checkin App Suspended", layout="centered")
-
-    st.markdown("""
-        <style>
-        body, .stApp {
-            background-color: white;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
-        <div style="display: flex; height: 80vh; justify-content: center; align-items: center; text-align: center;">
-            <div>
-                <h2>The Checkin App has been suspended until our meeting on Monday.</h2>
-                <p style="font-size:18px;">Get a paper inspection form from dispatch.</p>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
-else:
-    # 👇 YOUR ENTIRE EXISTING APP GOES HERE
-    # (no changes needed to your current code)
-    
-
-
+/*import streamlit as st
 import pathlib
 import gspread
 from google.oauth2.service_account import Credentials
@@ -783,4 +753,4 @@ if st.session_state.get("show_inspection_report"):
             st.session_state["report_csv_data"] = ""
             st.session_state["report_mode"] = "inspection"
             st.rerun()
-    pass
+*/
